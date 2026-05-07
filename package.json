@@ -1,0 +1,46 @@
+{
+  "name": "americansinalsace",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "argon2": "^0.44.0",
+    "next": "^16.2.6",
+    "next-auth": "^4.24.14",
+    "pg": "^8.20.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^25.6.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "autoprefixer": "^10.5.0",
+    "dotenv": "^17.4.2",
+    "eslint": "^10.3.0",
+    "eslint-config-next": "^16.2.6",
+    "jsdom": "^29.1.1",
+    "knip": "^6.12.1",
+    "postcss": "^8.5.14",
+    "prisma": "^7.8.0",
+    "tailwindcss": "^4.2.4",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "overrides": {
+    "postcss": "^8.5.14",
+    "@hono/node-server": "^2.0.1"
+  }
+}

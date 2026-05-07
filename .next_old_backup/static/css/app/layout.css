@@ -1,0 +1,52 @@
+/*!*************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[12].use[3]!./app/globals.css ***!
+  \*************************************************************************************************************************************************************************************************************************************************************/
+/* Visual Identity for Americans in Alsace */
+:root {
+  /* Primary Colors - Derived from US, Canada, and Alsace flags */
+  --color-primary-red: #E30613;    /* Alsace / Canada / US Stripes */
+  --color-primary-blue: #3C3B6E;   /* US Canton Blue */
+  --color-white: #FFFFFF;
+  
+  /* Neutral Palette */
+  --color-gray-900: #111827;
+  --color-gray-800: #1F2937;
+  --color-gray-700: #374151;
+  --color-gray-600: #4B5563;
+  --color-gray-500: #6B7280;
+  --color-gray-200: #E5E7EB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-50: #F9FAFB;
+
+  /* Semantic Colors */
+  --color-background: var(--color-gray-50);
+  --color-text-main: var(--color-gray-900);
+  --color-text-muted: var(--color-gray-600);
+  --color-border: var(--color-gray-200);
+
+  /* Typography */
+  --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-family-serif: 'Georgia', serif; /* For a classic, official feel */
+
+  /* Spacing (8pt Grid) */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Base Utility Classes */
+.bg-primary-red { background-color: var(--color-primary-red); }
+.bg-primary-blue { background-color: var(--color-primary-blue); }
+.text-primary-red { color: var(--color-primary-red); }
+.text-primary-blue { color: var(--color-primary-blue); }
+
+.font-serif { font-family: var(--font-family-serif); }
+.font-sans { font-family: var(--font-family-sans); }
+

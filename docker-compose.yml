@@ -1,0 +1,53 @@
+services:
+  web:
+    image: node:24-alpine
+    restart: always
+    working_dir: /app
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/app_db
+      SMTP_HOST: maildev
+      SMTP_PORT: 1025
+    depends_on:
+      db:
+        condition: service_healthy
+      maildev:
+        condition: service_started
+    volumes:
+      - .:/app
+    command: sh -c "apk add --no-cache openssl && npm install --legacy-peer-deps && npx prisma generate && npx prisma migrate deploy && npm run dev -- --hostname 0.0.0.0"
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  maildev:
+    image: maildev/maildev
+    restart: always
+    ports:
+      - '1080:1080'
+      - '1025:1025'
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - '8080:8080'
+
+volumes:
+  db_data:
