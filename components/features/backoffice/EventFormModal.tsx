@@ -182,7 +182,7 @@ export default function EventFormModal({ isOpen, onClose, event, categories }: E
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Member Price (€)</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Member Price</label>
               <input
                 type="number"
                 step="0.01"
@@ -195,7 +195,7 @@ export default function EventFormModal({ isOpen, onClose, event, categories }: E
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Non-Member Price (€)</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Non-Member Price</label>
               <input
                 type="number"
                 step="0.01"

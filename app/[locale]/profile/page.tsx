@@ -120,7 +120,10 @@ export default async function ProfilePage() {
 
           <div className="bg-white shadow-sm rounded-lg border border-[var(--color-border)] overflow-hidden">
             <div className="p-8">
-              <ProfileForm user={user} />
+              <ProfileForm user={{
+                ...user,
+                id: user.id.toString()
+              }} />
             </div>
           </div>
         </div>

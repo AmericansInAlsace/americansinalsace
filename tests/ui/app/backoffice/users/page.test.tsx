@@ -12,6 +12,9 @@ vi.mock('@/lib/db', () => ({
     role: {
       findMany: vi.fn(),
     },
+    membershipTier: {
+      findMany: vi.fn(),
+    },
   },
 }));
 
@@ -39,9 +42,11 @@ describe('UsersAdminPage', () => {
       }
     ];
     const mockRoles = [{ id: 1, name: 'ADMIN' }];
+    const mockTiers = [{ id: 1, name: 'Gold' }];
 
     vi.mocked(prisma.user.findMany).mockResolvedValue(mockUsers as any);
     vi.mocked(prisma.role.findMany).mockResolvedValue(mockRoles as any);
+    vi.mocked(prisma.membershipTier.findMany).mockResolvedValue(mockTiers as any);
 
     const Result = await UsersAdminPage();
     render(Result);
@@ -50,6 +55,6 @@ describe('UsersAdminPage', () => {
     expect(screen.getByText('John Doe')).toBeInTheDocument();
     expect(screen.getByText('john@example.com')).toBeInTheDocument();
     expect(screen.getByText('Verified')).toBeInTheDocument();
-    expect(screen.getByText('Gold')).toBeInTheDocument();
+    expect(screen.getAllByText('Gold')[0]).toBeInTheDocument();
   });
 });

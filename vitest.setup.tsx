@@ -3,7 +3,11 @@ import { vi } from 'vitest';
 
 // Mock next-intl
 vi.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
+  useTranslations: () => {
+    const t = (key: string) => key;
+    t.rich = (key: string) => key;
+    return t;
+  },
 }));
 
 // Mock i18n routing

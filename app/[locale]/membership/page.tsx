@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useSession } from 'next-auth/react';
 import { useRouter } from '@/i18n/routing';
+import { formatCurrency } from '@/lib/formatters';
 
 interface Tier {
   id: number;
@@ -109,7 +110,7 @@ export default function MembershipPage() {
               <h3 className="text-xl font-bold mb-2 font-serif">{tier.name}</h3>
               <p className="text-sm text-[var(--color-text-muted)] mb-6 flex-grow">{tier.description}</p>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-[var(--color-primary-blue)]">{tier.price}€</span>
+                <span className="text-4xl font-bold text-[var(--color-primary-blue)]">{formatCurrency(tier.price)}</span>
                 <span className="text-sm text-gray-500"> / year</span>
               </div>
               {selectedTier?.id === tier.id && (
@@ -125,7 +126,7 @@ export default function MembershipPage() {
           <div className="max-w-md mx-auto bg-white p-8 rounded-2xl border border-[var(--color-border)] shadow-lg text-center">
             <h2 className="text-2xl font-bold mb-6 font-serif">Complete Your Registration</h2>
             <p className="text-sm text-gray-600 mb-8">
-              You are subscribing to the <span className="font-bold">{selectedTier.name}</span> tier for {selectedTier.price}€ per year.
+              You are subscribing to the <span className="font-bold">{selectedTier.name}</span> tier for {formatCurrency(selectedTier.price)} per year.
             </p>
 
             {process.env.NODE_ENV !== 'production' && (

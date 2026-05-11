@@ -3,9 +3,26 @@ import { POST } from '@/app/api/webhooks/paypal/route';
 import { MembershipService } from '@/services/MembershipService';
 import { PayPalService } from '@/services/PayPalService';
 import { NextRequest } from 'next/server';
+import { Prisma } from '@/lib/generated/prisma/client';
 
 vi.mock('@/services/MembershipService');
 vi.mock('@/services/PayPalService');
+vi.mock('@/services/FinancialService', () => ({
+  recordManualPayment: vi.fn(),
+}));
+vi.mock('@/lib/db', () => ({
+  prisma: {
+    membershipTier: {
+      findUnique: vi.fn(),
+    },
+    subscription: {
+      updateMany: vi.fn(),
+    },
+  },
+}));
+
+import { prisma } from '@/lib/db';
+import * as FinancialService from '@/services/FinancialService';
 
 describe('Integration: PayPal Webhook -> Membership Activation', () => {
   beforeEach(() => {
@@ -28,6 +45,11 @@ describe('Integration: PayPal Webhook -> Membership Activation', () => {
     });
 
     vi.mocked(PayPalService.verifyWebhookSignature).mockResolvedValue(true);
+    vi.mocked(prisma.membershipTier.findUnique).mockResolvedValue({
+      id: 2,
+      name: 'Test Tier',
+      price: new Prisma.Decimal('10.00'),
+    } as any);
 
     const response = await POST(request);
     const data = await response.json();
@@ -42,6 +64,8 @@ describe('Integration: PayPal Webhook -> Membership Activation', () => {
       status: 'ACTIVE',
       paypalSubscriptionId: 'I-123',
     }));
+    
+    expect(FinancialService.recordManualPayment).toHaveBeenCalled();
   });
 
   it('should process a cancelled subscription', async () => {
@@ -64,6 +88,10 @@ describe('Integration: PayPal Webhook -> Membership Activation', () => {
 
     expect(response.status).toBe(200);
     expect(data.received).toBe(true);
+    expect(prisma.subscription.updateMany).toHaveBeenCalledWith({
+      where: { paypalSubscriptionId: 'I-123' },
+      data: { status: 'INACTIVE' },
+    });
   });
 
   it('should ignore activation event if custom_id is missing', async () => {

@@ -82,6 +82,43 @@ export async function recordManualPaymentAction(transactionData: Omit<Transactio
   }
 }
 
+/**
+ * Fetches all transactions for the backoffice financial dashboard.
+ * 
+ * @returns {Promise<any[]>} A promise that resolves to an array of transactions with user details.
+ */
+export async function getAllTransactions() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user || (session.user as any)?.role !== 'SUPERADMIN') {
+    throw new Error('Unauthorized: Only SUPERADMIN can access all transactions.');
+  }
+
+  try {
+    const transactions = await prisma.transaction.findMany({
+      orderBy: { transactionDate: 'desc' },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          }
+        }
+      }
+    });
+
+    return transactions.map(tx => ({
+      ...tx,
+      amount: parseFloat(tx.amount.toString()),
+    }));
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    throw new Error('Failed to fetch transactions.');
+  }
+}
+
 
 /**
  * Updates a user's role. This action is restricted to users with the 'SUPERADMIN' role.
@@ -171,10 +208,12 @@ export async function createEvent(eventData: any) {
       location: eventData.location,
       date: new Date(eventData.date),
       capacity: eventData.capacity ? parseInt(eventData.capacity, 10) : null,
-      memberPrice: parseFloat(eventData.memberPrice || 0),
-      nonMemberPrice: parseFloat(eventData.nonMemberPrice || 0),
+      memberPrice: Math.round(parseFloat(eventData.memberPrice || 0) * 100) / 100,
+      nonMemberPrice: Math.round(parseFloat(eventData.nonMemberPrice || 0) * 100) / 100,
       published: !!eventData.published,
       categoryId: parseInt(eventData.categoryId, 10),
+      reminder1DaysBefore: eventData.reminder1DaysBefore ? parseInt(eventData.reminder1DaysBefore, 10) : null,
+      reminder2DaysBefore: eventData.reminder2DaysBefore ? parseInt(eventData.reminder2DaysBefore, 10) : null,
     },
   });
 
@@ -203,10 +242,12 @@ export async function updateEvent(eventId: number, eventData: any) {
       location: eventData.location,
       date: new Date(eventData.date),
       capacity: eventData.capacity ? parseInt(eventData.capacity, 10) : null,
-      memberPrice: parseFloat(eventData.memberPrice || 0),
-      nonMemberPrice: parseFloat(eventData.nonMemberPrice || 0),
+      memberPrice: Math.round(parseFloat(eventData.memberPrice || 0) * 100) / 100,
+      nonMemberPrice: Math.round(parseFloat(eventData.nonMemberPrice || 0) * 100) / 100,
       published: !!eventData.published,
       categoryId: parseInt(eventData.categoryId, 10),
+      reminder1DaysBefore: eventData.reminder1DaysBefore ? parseInt(eventData.reminder1DaysBefore, 10) : null,
+      reminder2DaysBefore: eventData.reminder2DaysBefore ? parseInt(eventData.reminder2DaysBefore, 10) : null,
     },
   });
 

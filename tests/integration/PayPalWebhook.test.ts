@@ -96,7 +96,7 @@ describe('Integration: PayPal Webhook Handler', () => {
     }));
     expect(mockedPrisma.membershipTier.findUnique).toHaveBeenCalledWith({
       where: { id: 2 },
-      select: { price: true, currency: true, name: true },
+      select: { price: true, name: true },
     });
     expect(mockedFinancialService.recordManualPayment).toHaveBeenCalledWith(expect.objectContaining({
       userId: 1,
@@ -142,7 +142,7 @@ describe('Integration: PayPal Webhook Handler', () => {
     expect(response.status).toBe(200);
     expect(data.received).toBe(true);
     expect(mockedMembershipService.upsertSubscription).toHaveBeenCalledWith(expect.objectContaining({ userId: 3, tierId: 4, paypalSubscriptionId: 'SUB_ID_456' }));
-    expect(mockedPrisma.membershipTier.findUnique).toHaveBeenCalledWith({ where: { id: 4 }, select: { price: true, currency: true, name: true } });
+    expect(mockedPrisma.membershipTier.findUnique).toHaveBeenCalledWith({ where: { id: 4 }, select: { price: true, name: true } });
     expect(mockedFinancialService.recordManualPayment).toHaveBeenCalledWith(expect.objectContaining({ userId: 3, amount: new Prisma.Decimal('199.99'), description: 'Subscription payment for Pro Annual' }));
   });
 
@@ -229,11 +229,11 @@ describe('Integration: PayPal Webhook Handler', () => {
     mockedPrisma.membershipTier.findUnique.mockResolvedValue(null); // Tier not found
 
     const response = await POST(mockRequest);
-    expect(response.status).toBe(200); // Handler should not throw an error, just log and continue
+    expect(response.status).toBe(404);
     const data = await response.json();
-    expect(data.received).toBe(true);
+    expect(data.error).toBe('Membership tier not found');
 
-    expect(mockedPrisma.membershipTier.findUnique).toHaveBeenCalledWith({ where: { id: 999 }, select: { price: true, currency: true, name: true } });
+    expect(mockedPrisma.membershipTier.findUnique).toHaveBeenCalledWith({ where: { id: 999 }, select: { price: true, name: true } });
     expect(mockedFinancialService.recordManualPayment).not.toHaveBeenCalled(); // Transaction should not be created
   });
 
@@ -252,7 +252,7 @@ describe('Integration: PayPal Webhook Handler', () => {
     mockedMembershipService.upsertSubscription.mockResolvedValue(undefined);
     mockedPrisma.membershipTier.findUnique.mockResolvedValue({
       id: 2, name: 'Premium Monthly', price: new Prisma.Decimal('19.99'), paypalPlanId: 'PLAN_ABC', active: true,
-    });
+    } as any);
     mockedFinancialService.recordManualPayment.mockRejectedValue(new Error('Financial Service Error')); // Simulate error
 
     const response = await POST(mockRequest);

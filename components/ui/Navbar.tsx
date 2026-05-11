@@ -61,9 +61,64 @@ export function Navbar() {
           </div>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-6 lg:gap-8">
-            {/* Locale Switcher */}
-            <div className="flex items-center gap-1 border-r border-gray-200 pr-6 mr-2">
+          <div className="hidden md:flex items-center gap-6 lg:gap-8 flex-grow ml-12">
+            {/* Group 1: Main Navigation Links */}
+            <div className="flex items-center gap-6 lg:gap-8">
+              <Link href="/" className={navLinkClass}>{t('home')}</Link>
+              <Link href="/sponsors" className={navLinkClass}>{t('sponsors')}</Link>
+              {session && (
+                <Link href="/membership" className={navLinkClass}>{t('membership')}</Link>
+              )}
+            </div>
+
+            {/* Spacer to push subsequent items to the right */}
+            <div className="flex-grow" />
+
+            {/* Group 2: User Related Links */}
+            <div className="flex items-center gap-4">
+              {isLoading ? (
+                <div className="h-10 w-24 bg-gray-100 animate-pulse rounded-full"></div>
+              ) : session ? (
+                <>
+                  {hasBackofficeAccess && (
+                    <Link 
+                      href="/backoffice" 
+                      className="text-sm font-bold text-[var(--color-primary-blue)] hover:text-[var(--color-primary-red)] transition-colors py-2 px-4 border border-blue-100 rounded-full bg-blue-50 shadow-sm"
+                    >
+                      Backoffice
+                    </Link>
+                  )}
+                  <Link 
+                    href="/profile" 
+                    className="text-sm font-semibold text-[var(--color-text-main)] hover:text-[var(--color-primary-red)] transition-colors py-2 px-2"
+                  >
+                    {t('profile')}
+                  </Link>
+                  <button 
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="text-sm font-bold text-white bg-[var(--color-primary-red)] px-6 py-2.5 rounded-full hover:opacity-90 transition-all shadow-md active:scale-95 cursor-pointer"
+                  >
+                    {t('logout')}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className={navLinkClass}>{t('login')}</Link>
+                  <Link 
+                    href="/register" 
+                    className="text-sm font-bold text-white bg-[var(--color-primary-blue)] px-6 py-2.5 rounded-full hover:opacity-90 transition-all shadow-md active:scale-95"
+                  >
+                    {t('register')}
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Visual Divider */}
+            <div className="h-6 w-px bg-gray-200" />
+
+            {/* Group 3: Locale Switcher */}
+            <div className="flex items-center gap-1">
               <button 
                 onClick={() => onLocaleChange('en')}
                 className={`text-xs font-black w-10 h-10 flex items-center justify-center rounded-full transition-all ${locale === 'en' ? 'bg-blue-100 text-blue-700 shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}
@@ -79,50 +134,6 @@ export function Navbar() {
                 FR
               </button>
             </div>
-
-            <Link href="/" className={navLinkClass}>{t('home')}</Link>
-            <Link href="/sponsors" className={navLinkClass}>{t('sponsors')}</Link>
-
-            {session && (
-              <Link href="/membership" className={navLinkClass}>{t('membership')}</Link>
-            )}
-
-            {isLoading ? (
-              <div className="h-10 w-24 bg-gray-100 animate-pulse rounded-full"></div>
-            ) : session ? (
-              <div className="flex items-center gap-4">
-                {hasBackofficeAccess && (
-                  <Link 
-                    href="/backoffice" 
-                    className="text-sm font-bold text-[var(--color-primary-blue)] hover:text-[var(--color-primary-red)] transition-colors py-2 px-4 border border-blue-100 rounded-full bg-blue-50 shadow-sm"
-                  >
-                    Backoffice
-                  </Link>
-                )}
-                <Link 
-                  href="/profile" 
-                  className="text-sm font-semibold text-[var(--color-text-main)] hover:text-[var(--color-primary-red)] transition-colors py-2 px-2"
-                >
-                  {t('profile')}
-                </Link>
-                <button 
-                  onClick={() => signOut({ callbackUrl: '/' })}
-                  className="text-sm font-bold text-white bg-[var(--color-primary-red)] px-6 py-2.5 rounded-full hover:opacity-90 transition-all shadow-md active:scale-95 cursor-pointer"
-                >
-                  {t('logout')}
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-4">
-                <Link href="/login" className={navLinkClass}>{t('login')}</Link>
-                <Link 
-                  href="/register" 
-                  className="text-sm font-bold text-white bg-[var(--color-primary-blue)] px-6 py-2.5 rounded-full hover:opacity-90 transition-all shadow-md active:scale-95"
-                >
-                  {t('register')}
-                </Link>
-              </div>
-            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -150,19 +161,28 @@ export function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden fixed inset-0 top-20 bg-white z-40 animate-in slide-in-from-right duration-300">
           <div className="p-6 flex flex-col h-full">
+            {/* Main Links */}
             <div className="flex-grow">
+              <h3 className="text-sm font-semibold text-gray-400 px-4 mb-2">Navigation</h3>
               <Link href="/" onClick={toggleMenu} className={mobileLinkClass}>
                 {t('home')} <span>→</span>
               </Link>
               <Link href="/sponsors" onClick={toggleMenu} className={mobileLinkClass}>
                 {t('sponsors')} <span>→</span>
               </Link>
+              {session && (
+                <Link href="/membership" onClick={toggleMenu} className={mobileLinkClass}>
+                  {t('membership')} <span>→</span>
+                </Link>
+              )}
+              
+              {/* Visual Divider for Mobile */}
+              <div className="my-6 border-t border-gray-100" />
 
+              {/* User Links */}
+              <h3 className="text-sm font-semibold text-gray-400 px-4 mb-2">Account</h3>
               {session ? (
                 <>
-                  <Link href="/membership" onClick={toggleMenu} className={mobileLinkClass}>
-                    {t('membership')} <span>→</span>
-                  </Link>
                   <Link href="/profile" onClick={toggleMenu} className={mobileLinkClass}>
                     {t('profile')} <span>👤</span>
                   </Link>
@@ -179,6 +199,7 @@ export function Navbar() {
               )}
             </div>
 
+            {/* Auth Actions at the bottom */}
             <div className="mt-auto pb-10 space-y-4">
               {!session ? (
                 <Link 

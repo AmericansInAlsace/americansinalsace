@@ -42,6 +42,6 @@ describe('EmailLogsPage', () => {
     const Result = await EmailLogsPage();
     render(Result);
 
-    expect(screen.getByText('No email logs found yet.')).toBeInTheDocument();
+    expect(screen.getByText('No data available.')).toBeInTheDocument();
   });
 });

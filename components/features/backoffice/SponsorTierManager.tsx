@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { createSponsorTier, updateSponsorTier, deleteSponsorTier } from '@/app/actions/sponsorship';
+import { formatCurrency } from '@/lib/formatters';
 
 interface SponsorTier {
   id: number;
@@ -121,7 +122,7 @@ export default function SponsorTierManager({ initialTiers }: SponsorTierManagerP
                   <div className="text-xs text-gray-500 truncate max-w-xs">{tier.description}</div>
                 </td>
                 <td className="px-6 py-4 font-mono font-medium text-gray-600">
-                  €{tier.price.toFixed(2)}
+                  {formatCurrency(tier.price)}
                 </td>
                 <td className="px-6 py-4 text-gray-600">{tier.priority}</td>
                 <td className="px-6 py-4">
@@ -180,7 +181,7 @@ export default function SponsorTierManager({ initialTiers }: SponsorTierManagerP
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Price (€)</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Price</label>
                   <input
                     type="number"
                     step="0.01"

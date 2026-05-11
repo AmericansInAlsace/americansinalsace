@@ -1,6 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { exportUserData, anonymizeUserData } from '@/app/actions/gdpr';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
+import { Button } from '@/components/ui/Button';
 
 interface UserDetailsModalProps {
   user: any;
@@ -9,6 +12,10 @@ interface UserDetailsModalProps {
 }
 
 export default function UserDetailsModal({ user, isOpen, onClose }: UserDetailsModalProps) {
+  const [isGdprLoading, setIsGdprLoading] = useState(false);
+  const [isAnonymizeModalOpen, setIsAnonymizeModalOpen] = useState(false);
+  const [gdprMessage, setGdprMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   if (!isOpen || !user) return null;
 
   const formatDate = (date: Date | string | null) => {
@@ -21,6 +28,32 @@ export default function UserDetailsModal({ user, isOpen, onClose }: UserDetailsM
       minute: '2-digit'
     }).format(new Date(date));
   };
+
+  async function handleExport() {
+    setIsGdprLoading(true);
+    setGdprMessage(null);
+    try {
+      await exportUserData(user.id);
+      setGdprMessage({ type: 'success', text: `Data export has been sent to ${user.email}` });
+    } catch (err: any) {
+      setGdprMessage({ type: 'error', text: err.message || 'Failed to export data.' });
+    } finally {
+      setIsGdprLoading(false);
+    }
+  }
+
+  async function handleAnonymize() {
+    setIsGdprLoading(true);
+    setIsAnonymizeModalOpen(false);
+    try {
+      await anonymizeUserData(user.id);
+      setGdprMessage({ type: 'success', text: 'User has been successfully anonymized.' });
+    } catch (err: any) {
+      setGdprMessage({ type: 'error', text: err.message || 'Failed to anonymize user.' });
+    } finally {
+      setIsGdprLoading(false);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
@@ -41,6 +74,14 @@ export default function UserDetailsModal({ user, isOpen, onClose }: UserDetailsM
 
         {/* Content */}
         <div className="p-8 space-y-8">
+          {gdprMessage && (
+            <div className={`p-4 rounded-lg text-sm font-medium animate-in fade-in slide-in-from-top-2 duration-300 ${
+              gdprMessage.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'
+            }`}>
+              {gdprMessage.text}
+            </div>
+          )}
+
           {/* Profile Section */}
           <section>
             <h3 className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-4">Profile Information</h3>
@@ -107,7 +148,29 @@ export default function UserDetailsModal({ user, isOpen, onClose }: UserDetailsM
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 rounded-b-2xl">
+        <div className="p-6 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50 rounded-b-2xl">
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExport} 
+              isLoading={isGdprLoading}
+              className="bg-white"
+              title="Export User Data via Email"
+            >
+              <span className="mr-2">📧</span> Export
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsAnonymizeModalOpen(true)}
+              disabled={isGdprLoading}
+              className="bg-white border-red-200 text-red-600 hover:bg-red-50"
+              title="Anonymize Account"
+            >
+              <span className="mr-2">👤❌</span> Anonymize
+            </Button>
+          </div>
           <button 
             onClick={onClose}
             className="px-6 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
@@ -116,6 +179,17 @@ export default function UserDetailsModal({ user, isOpen, onClose }: UserDetailsM
           </button>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={isAnonymizeModalOpen}
+        onClose={() => setIsAnonymizeModalOpen(false)}
+        onConfirm={handleAnonymize}
+        title="Anonymize User Record?"
+        message={`Are you sure you want to anonymize ${user.firstName} ${user.lastName}? This will permanently scrub their personal info. Financial records will be preserved but disconnected from their identity. This action is irreversible.`}
+        confirmLabel="Anonymize Irreversibly"
+        variant="destructive"
+        isLoading={isGdprLoading}
+      />
     </div>
   );
 }

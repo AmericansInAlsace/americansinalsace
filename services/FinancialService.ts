@@ -56,8 +56,12 @@ export async function getTransactionHistory(
         ...(userId && { userId: userId }),
         ...(type && { type: type }),
         ...(status && { status: status }),
-        ...(startDate && { transactionDate: { gte: startDate } }),
-        ...(endDate && { transactionDate: { lte: endDate } }),
+        ...((startDate || endDate) && {
+          transactionDate: {
+            ...(startDate && { gte: startDate }),
+            ...(endDate && { lte: endDate }),
+          },
+        }),
         ...(search && {
           OR: [
             { description: { contains: search, mode: 'insensitive' } },
@@ -113,8 +117,12 @@ export async function getFinancialSummary(filter: TransactionFilter = {}): Promi
         ...(userId && { userId: userId }),
         ...(type && { type: type }),
         ...(status && { status: status }),
-        ...(startDate && { transactionDate: { gte: startDate } }),
-        ...(endDate && { transactionDate: { lte: endDate } }),
+        ...((startDate || endDate) && {
+          transactionDate: {
+            ...(startDate && { gte: startDate }),
+            ...(endDate && { lte: endDate }),
+          },
+        }),
       },
     });
 
@@ -149,10 +157,12 @@ export async function recordManualPayment(transactionData: Omit<Transaction, 'id
   }
 
   try {
+    const roundedAmount = Math.round(parseFloat(amount.toString()) * 100) / 100;
     const newTransaction = await prisma.transaction.create({
       data: {
         userId: userId,
-        amount: new Prisma.Decimal(amount.toString()), // Ensure amount is a Prisma.Decimal
+        amount: new Prisma.Decimal(roundedAmount), // Ensure amount is a Prisma.Decimal
+        currency: transactionData.currency || process.env.NEXT_PUBLIC_CURRENCY || 'EUR',
         type: type,
         status: status,
         description: description || null,

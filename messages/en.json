@@ -1,7 +1,11 @@
 {
   "HomePage": {
     "title": "Welcome to Americans <span>in Alsace</span>",
-    "description": "Connecting the American community in the Alsace region."
+    "description": "Connecting the American community in the Alsace region.",
+    "upcomingEvents": "Upcoming Events",
+    "viewAllEvents": "View All Events",
+    "noEvents": "Stay tuned for our upcoming celebrations! Details will be posted here soon.",
+    "latestNews": "Latest News"
   },
   "Navbar": {
     "home": "Home",

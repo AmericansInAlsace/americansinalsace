@@ -23,13 +23,15 @@ export class JiraService {
    * @param {string} description - The detailed description.
    * @param {string} category - The category of the improvement.
    * @param {object} reporter - The user who reported the improvement.
+   * @param {string} issueType - The type of JIRA issue (e.g., 'Story', 'Bug').
    * @returns {Promise<any>} The response from JIRA.
    */
   static async createIssue(
     summary: string, 
     description: string, 
     category: string,
-    reporter?: { name: string; email: string }
+    reporter?: { name: string; email: string },
+    issueType?: string
   ): Promise<any> {
     const host = process.env.JIRA_HOST;
     const projectKey = process.env.JIRA_PROJECT_KEY;
@@ -102,7 +104,7 @@ export class JiraService {
         },
         labels: [category.replace(/\s+/g, '_')],
         issuetype: {
-          name: 'Story',
+          name: issueType || process.env.JIRA_ISSUE_TYPE || 'Story',
         },
       },
     };

@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { prisma } from '@/lib/db';
+import { LoggerService } from './LoggerService';
 
 /**
  * MailService handles all email communication for the application.
@@ -9,7 +10,12 @@ export class MailService {
   private static transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'localhost',
     port: Number(process.env.SMTP_PORT) || 1025,
-    ignoreTLS: true,
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: process.env.SMTP_USER ? {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    } : undefined,
+    ignoreTLS: process.env.SMTP_SECURE !== 'true',
   });
 
   /**
@@ -69,24 +75,26 @@ export class MailService {
    */
   static async sendVerificationEmail(email: string, token: string) {
     const actionUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/verify?token=${token}`;
+    let emailSubject = 'Verification Email';
 
     try {
       const { content, subject } = await this.getProcessedTemplate('verification-email', { actionUrl });
+      emailSubject = subject;
 
       const mailOptions = {
-        from: '"Americans in Alsace" <no-reply@americansinalsace.fr>',
+        from: `"${process.env.MAIL_FROM_NAME || 'Americans in Alsace'}" <${process.env.MAIL_FROM_ADDRESS || 'no-reply@americansinalsace.fr'}>`,
         to: email,
-        subject,
+        subject: emailSubject,
         html: content,
       };
 
       await this.transporter.sendMail(mailOptions);
-      await this.logEmail(email, subject, 'SUCCESS');
+      await this.logEmail(email, emailSubject, 'SUCCESS');
       console.log(`Verification email sent to ${email}`);
     } catch (error: any) {
-      console.error('Email sending error:', error);
-      await this.logEmail(email, 'Verification Email', 'FAILED', error.message);
-      throw new Error('Failed to send verification email.');
+      await LoggerService.error('MAIL', `Failed to send ${emailSubject.toLowerCase()} to ${email}`, { error: error.message });
+      await this.logEmail(email, emailSubject, 'FAILED', error.message);
+      throw new Error(`Failed to send ${emailSubject.toLowerCase()}.`);
     }
   }
 
@@ -99,12 +107,84 @@ export class MailService {
    */
   static async sendPasswordResetEmail(email: string, token: string) {
     const actionUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+    let emailSubject = 'Password Reset Email';
 
     try {
       const { content, subject } = await this.getProcessedTemplate('reset-password', { actionUrl });
+      emailSubject = subject;
 
       const mailOptions = {
-        from: '"Americans in Alsace" <no-reply@americansinalsace.fr>',
+        from: `"${process.env.MAIL_FROM_NAME || 'Americans in Alsace'}" <${process.env.MAIL_FROM_ADDRESS || 'no-reply@americansinalsace.fr'}>`,
+        to: email,
+        subject: emailSubject,
+        html: content,
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      await this.logEmail(email, emailSubject, 'SUCCESS');
+      console.log(`Password reset email sent to ${email}`);
+    } catch (error: any) {
+      await LoggerService.error('MAIL', `Failed to send ${emailSubject.toLowerCase()} to ${email}`, { error: error.message });
+      await this.logEmail(email, emailSubject, 'FAILED', error.message);
+      throw new Error(`Failed to send ${emailSubject.toLowerCase()}.`);
+    }
+  }
+
+  /**
+   * Sends a data export email with a JSON attachment.
+   * @param {string} email - The recipient's email address.
+   * @param {string} jsonData - The JSON string to be attached.
+   * @returns {Promise<void>}
+   */
+  static async sendDataExportEmail(email: string, jsonData: string) {
+    try {
+      const { content, subject } = await this.getProcessedTemplate('data-export', { 
+        userName: email.split('@')[0] 
+      });
+
+      const mailOptions = {
+        from: `"${process.env.MAIL_FROM_NAME || 'Americans in Alsace'}" <${process.env.MAIL_FROM_ADDRESS || 'no-reply@americansinalsace.fr'}>`,
+        to: email,
+        subject,
+        html: content,
+        attachments: [
+          {
+            filename: 'my-data.json',
+            content: jsonData,
+            contentType: 'application/json'
+          }
+        ]
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      await this.logEmail(email, subject, 'SUCCESS');
+      console.log(`Data export email sent to ${email}`);
+    } catch (error: any) {
+      const errorMsg = error.message || 'Unknown error';
+      await LoggerService.error('MAIL', `Failed to send data export to ${email}`, { error: errorMsg });
+      await this.logEmail(email, 'Data Export', 'FAILED', errorMsg);
+      throw new Error('Failed to send data export email.');
+    }
+  }
+
+  /**
+   * Sends an event RSVP confirmation email.
+   * @param {string} email - The recipient's email address.
+   * @param {string} userName - The name of the user.
+   * @param {object} eventDetails - Details of the event.
+   * @returns {Promise<void>}
+   */
+  static async sendEventRSVPConfirmation(email: string, userName: string, eventDetails: { title: string; date: Date | string; location: string }) {
+    try {
+      const { content, subject } = await this.getProcessedTemplate('event-rsvp-confirmation', {
+        userName,
+        eventTitle: eventDetails.title,
+        eventDate: new Date(eventDetails.date).toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' }),
+        eventLocation: eventDetails.location,
+      });
+
+      const mailOptions = {
+        from: `"${process.env.MAIL_FROM_NAME || 'Americans in Alsace'}" <${process.env.MAIL_FROM_ADDRESS || 'no-reply@americansinalsace.fr'}>`,
         to: email,
         subject,
         html: content,
@@ -112,11 +192,45 @@ export class MailService {
 
       await this.transporter.sendMail(mailOptions);
       await this.logEmail(email, subject, 'SUCCESS');
-      console.log(`Password reset email sent to ${email}`);
+      console.log(`RSVP confirmation sent to ${email} for event ${eventDetails.title}`);
     } catch (error: any) {
-      console.error('Email sending error:', error);
-      await this.logEmail(email, 'Password Reset Email', 'FAILED', error.message);
-      throw new Error('Failed to send password reset email.');
+      const errorMsg = error.message || 'Unknown error';
+      await LoggerService.error('MAIL', `Failed to send RSVP confirmation to ${email}`, { error: errorMsg });
+      await this.logEmail(email, 'RSVP Confirmation', 'FAILED', errorMsg);
+      // We don't throw here to avoid failing the RSVP process if email fails
+    }
+  }
+
+  /**
+   * Sends an event reminder email.
+   * @param {string} email - The recipient's email address.
+   * @param {string} userName - The name of the user.
+   * @param {object} eventDetails - Details of the event.
+   * @returns {Promise<void>}
+   */
+  static async sendEventReminder(email: string, userName: string, eventDetails: { title: string; date: Date | string; location: string }) {
+    try {
+      const { content, subject } = await this.getProcessedTemplate('event-reminder', {
+        userName,
+        eventTitle: eventDetails.title,
+        eventDate: new Date(eventDetails.date).toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' }),
+        eventLocation: eventDetails.location,
+      });
+
+      const mailOptions = {
+        from: `"${process.env.MAIL_FROM_NAME || 'Americans in Alsace'}" <${process.env.MAIL_FROM_ADDRESS || 'no-reply@americansinalsace.fr'}>`,
+        to: email,
+        subject,
+        html: content,
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      await this.logEmail(email, subject, 'SUCCESS');
+      console.log(`Event reminder sent to ${email} for event ${eventDetails.title}`);
+    } catch (error: any) {
+      const errorMsg = error.message || 'Unknown error';
+      await LoggerService.error('MAIL', `Failed to send event reminder to ${email}`, { error: errorMsg });
+      await this.logEmail(email, 'Event Reminder', 'FAILED', errorMsg);
     }
   }
 }

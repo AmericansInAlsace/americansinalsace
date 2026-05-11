@@ -14,6 +14,15 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
+vi.mock('@/services/LoggerService', () => ({
+  LoggerService: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
 const mockSendMail = vi.fn().mockResolvedValue({ messageId: '123' });
 vi.mock('nodemailer', () => ({
   default: {
@@ -61,7 +70,7 @@ describe('MailService', () => {
 
     it('should log failure if sendMail fails', async () => {
       vi.mocked(prisma.emailTemplate.findUnique).mockResolvedValue({
-        subject: 'S', content: 'C'
+        subject: 'Verification Email', content: 'C'
       } as any);
       mockSendMail.mockRejectedValue(new Error('SMTP Error'));
 
@@ -89,6 +98,69 @@ describe('MailService', () => {
         to: 'test@example.com',
         subject: 'Reset Password',
         html: expect.stringContaining('reset-token'),
+      }));
+    });
+
+    it('should log failure if sendMail fails for password reset', async () => {
+      vi.mocked(prisma.emailTemplate.findUnique).mockResolvedValue({
+        subject: 'Reset Password', content: 'C'
+      } as any);
+      mockSendMail.mockRejectedValue(new Error('SMTP Error'));
+
+      await expect(MailService.sendPasswordResetEmail('test@example.com', 'reset-token'))
+        .rejects.toThrow('Failed to send reset password.');
+
+      expect(prisma.emailLog.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ status: 'FAILED' }),
+      }));
+    });
+  });
+
+  describe('sendDataExportEmail', () => {
+    it('should successfully send a data export email', async () => {
+      vi.mocked(prisma.emailTemplate.findUnique).mockResolvedValue({
+        id: 3,
+        slug: 'data-export',
+        subject: 'Data Export',
+        content: 'Hi {{userName}}, your export.',
+      } as any);
+
+      await MailService.sendDataExportEmail('test@example.com', '{"data":"test"}');
+
+      expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
+        to: 'test@example.com',
+        subject: 'Data Export',
+        html: expect.stringContaining('test'),
+        attachments: expect.arrayContaining([
+          expect.objectContaining({
+            filename: 'my-data.json',
+            content: '{"data":"test"}',
+            contentType: 'application/json'
+          })
+        ])
+      }));
+      expect(prisma.emailLog.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ status: 'SUCCESS' }),
+      }));
+    });
+
+    it('should throw error if template not found for data export', async () => {
+      vi.mocked(prisma.emailTemplate.findUnique).mockResolvedValue(null);
+      await expect(MailService.sendDataExportEmail('test@example.com', 'data'))
+        .rejects.toThrow('Failed to send data export email.');
+    });
+
+    it('should log failure if sendMail fails for data export', async () => {
+      vi.mocked(prisma.emailTemplate.findUnique).mockResolvedValue({
+        subject: 'Data Export', content: 'C'
+      } as any);
+      mockSendMail.mockRejectedValue(new Error('SMTP Error'));
+
+      await expect(MailService.sendDataExportEmail('test@example.com', 'data'))
+        .rejects.toThrow('Failed to send data export email.');
+
+      expect(prisma.emailLog.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ status: 'FAILED' }),
       }));
     });
   });

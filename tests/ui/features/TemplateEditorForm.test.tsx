@@ -81,4 +81,17 @@ describe('TemplateEditorForm', () => {
     fireEvent.click(screen.getByText(/Cancel/));
     expect(mockBack).toHaveBeenCalled();
   });
+
+  it('should toggle between edit and preview modes', () => {
+    render(<TemplateEditorForm template={mockTemplate} />);
+    
+    expect(screen.getByTestId('mock-editor')).toBeInTheDocument();
+    
+    fireEvent.click(screen.getByText('Preview'));
+    expect(screen.queryByTestId('mock-editor')).not.toBeInTheDocument();
+    expect(screen.getByText(/Email Preview/i)).toBeInTheDocument();
+    
+    fireEvent.click(screen.getByText('Editor'));
+    expect(screen.getByTestId('mock-editor')).toBeInTheDocument();
+  });
 });

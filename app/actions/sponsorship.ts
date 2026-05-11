@@ -44,7 +44,7 @@ export async function createSponsorTier(data: {
     data: {
       name: data.name,
       description: data.description,
-      price: data.price,
+      price: Math.round(data.price * 100) / 100,
       priority: data.priority || 0,
     },
   });
@@ -79,7 +79,7 @@ export async function updateSponsorTier(id: number, data: {
     data: {
       name: data.name,
       description: data.description,
-      price: data.price,
+      price: Math.round(data.price * 100) / 100,
       priority: data.priority,
       active: data.active,
     },

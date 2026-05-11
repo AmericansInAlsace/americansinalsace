@@ -2,14 +2,15 @@ import React from 'react';
 import '../globals.css';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { Navbar } from '@/components/ui/Navbar';
+import { ErrorLogger } from '@/components/providers/ErrorLogger';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 
 export const metadata = {
-  title: 'Americans in Alsace',
-  description: 'An association for North Americans residing in Alsace, France.',
+  title: process.env.NEXT_PUBLIC_APP_NAME || 'Americans in Alsace',
+  description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'An association for North Americans residing in Alsace, France.',
   icons: {
     icon: '/favicon.ico',
     apple: '/AIA_copy.png',
@@ -60,6 +61,7 @@ export default async function LocaleLayout({
       <body className="font-sans antialiased text-[var(--color-text-main)]">
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
+            <ErrorLogger />
             <div className="min-h-screen flex flex-col">
               <Navbar />
               <div className="flex-grow">

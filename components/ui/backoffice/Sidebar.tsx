@@ -60,8 +60,6 @@ const navSections: NavSection[] = [
   {
     title: 'Administration',
     items: [
-      { name: 'Users', href: '/backoffice/users', icon: '👥' },
-      { name: 'Roles', href: '/backoffice/roles', icon: '🔐' },
       {
         name: 'Emails',
         icon: '✉️',
@@ -70,6 +68,8 @@ const navSections: NavSection[] = [
           { name: 'Templates', href: '/backoffice/communications/templates' },
         ],
       },
+      { name: 'Users', href: '/backoffice/users', icon: '👥' },
+      { name: 'Roles', href: '/backoffice/roles', icon: '🔐' },
     ],
   },
   {
@@ -83,6 +83,7 @@ const navSections: NavSection[] = [
           { name: 'Categories', href: '/backoffice/improvements/categories' },
         ],
       },
+      { name: 'System Logs', href: '/backoffice/system/logs', icon: '⚙️' },
     ],
   },
 ];
@@ -132,7 +133,12 @@ export default function Sidebar({ isOpen, onClose, userRole }: SidebarProps) {
         }
         return true;
       })
-    })).filter(item => !item.subItems || item.subItems.length > 0)
+    })).filter(item => {
+      if (item.href === '/backoffice/system/logs') {
+        return userRole === 'SUPERADMIN';
+      }
+      return !item.subItems || item.subItems.length > 0;
+    })
   })).filter(section => section.items.length > 0);
 
   return (

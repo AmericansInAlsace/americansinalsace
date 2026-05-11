@@ -17,6 +17,7 @@ vi.mock('next/navigation', () => ({
 // Mock i18n routing
 vi.mock('@/i18n/routing', () => ({
   Link: ({ children, href }: any) => <a href={href}>{children}</a>,
+  usePathname: vi.fn().mockReturnValue('/backoffice'),
 }));
 
 describe('BackofficeLayout', () => {

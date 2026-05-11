@@ -27,7 +27,7 @@ describe('TiersAdminPage', () => {
 
     expect(screen.getByText('Membership Tiers')).toBeInTheDocument();
     expect(screen.getByText('Basic')).toBeInTheDocument();
-    expect(screen.getByText('20€ / yr')).toBeInTheDocument();
+    expect(screen.getByText(/€20.00/i)).toBeInTheDocument();
     expect(screen.getByText('P-123')).toBeInTheDocument();
     expect(screen.getByText('Active')).toBeInTheDocument();
   });

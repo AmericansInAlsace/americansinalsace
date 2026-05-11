@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getSponsorships, updateSponsorshipStatus, createSponsorshipAction, searchUsersForSponsorship, updateSponsorshipAction } from '@/app/actions/sponsorship';
+import { DataTable, Column, Filter } from '@/components/ui/DataTable';
 
 interface Sponsorship {
   id: number;
@@ -83,7 +84,6 @@ export default function SponsorshipManager({ initialSponsorships, tiers }: Spons
       } else {
         await createSponsorshipAction(selectedUser.id, selectedTier, startDate);
       }
-      // Refresh list
       const updated = await getSponsorships();
       setSponsorships(updated as any);
       setIsModalOpen(false);
@@ -104,6 +104,95 @@ export default function SponsorshipManager({ initialSponsorships, tiers }: Spons
     }
   };
 
+  const columns: Column<Sponsorship>[] = [
+    {
+      header: 'User',
+      accessorKey: 'user.email',
+      cell: (s) => (
+        <div>
+          <div className="font-bold text-gray-900">{s.user.firstName} {s.user.lastName}</div>
+          <div className="text-xs text-gray-500">{s.user.email}</div>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      header: 'Tier',
+      accessorKey: 'tier.name',
+      cell: (s) => <span className="font-medium text-gray-700">{s.tier.name}</span>,
+      sortable: true,
+    },
+    {
+      header: 'Period',
+      cell: (s) => (
+        <span className="text-gray-600">
+          {new Date(s.startDate).toLocaleDateString()} - {new Date(s.endDate).toLocaleDateString()}
+        </span>
+      ),
+    },
+    {
+      header: 'Status',
+      accessorKey: 'status',
+      cell: (s) => (
+        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+          s.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 
+          s.status === 'EXPIRED' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+        }`}>
+          {s.status}
+        </span>
+      ),
+      sortable: true,
+    },
+    {
+      header: 'Actions',
+      className: 'text-right',
+      cell: (s) => (
+        <div className="space-x-2">
+          {s.status === 'ACTIVE' ? (
+            <button 
+              onClick={() => handleStatusChange(s.id, 'CANCELLED')}
+              className="text-orange-600 hover:text-orange-800 text-xs font-bold"
+            >
+              Cancel
+            </button>
+          ) : (
+            <button 
+              onClick={() => handleStatusChange(s.id, 'ACTIVE')}
+              className="text-green-600 hover:text-green-800 text-xs font-bold"
+            >
+              Reactivate
+            </button>
+          )}
+          <button 
+            onClick={() => handleOpenEdit(s)}
+            className="text-blue-600 hover:text-blue-800 text-xs font-bold"
+          >
+            Edit
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const filters: Filter[] = [
+    {
+      id: 'status',
+      label: 'All Statuses',
+      type: 'select',
+      options: [
+        { label: 'Active', value: 'ACTIVE' },
+        { label: 'Expired', value: 'EXPIRED' },
+        { label: 'Cancelled', value: 'CANCELLED' },
+      ],
+    },
+    {
+      id: 'tierId',
+      label: 'All Tiers',
+      type: 'select',
+      options: tiers.map(t => ({ label: t.name, value: String(t.id) })),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -116,65 +205,12 @@ export default function SponsorshipManager({ initialSponsorships, tiers }: Spons
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-50 text-gray-700 text-xs uppercase font-bold tracking-wider">
-            <tr>
-              <th className="px-6 py-4">User</th>
-              <th className="px-6 py-4">Tier</th>
-              <th className="px-6 py-4">Period</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {sponsorships.map((s) => (
-              <tr key={s.id} className="hover:bg-gray-50 transition-colors text-sm">
-                <td className="px-6 py-4">
-                  <div className="font-bold text-gray-900">{s.user.firstName} {s.user.lastName}</div>
-                  <div className="text-xs text-gray-500">{s.user.email}</div>
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-700">{s.tier.name}</td>
-                <td className="px-6 py-4 text-gray-600">
-                  {new Date(s.startDate).toLocaleDateString()} - {new Date(s.endDate).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                    s.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 
-                    s.status === 'EXPIRED' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
-                  }`}>
-                    {s.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right space-x-2">
-                  {s.status === 'ACTIVE' ? (
-                    <button 
-                      onClick={() => handleStatusChange(s.id, 'CANCELLED')}
-                      className="text-orange-600 hover:text-orange-800 text-xs font-bold"
-                    >
-                      Cancel
-                    </button>
-                  ) : (
-                    <button 
-                      onClick={() => handleStatusChange(s.id, 'ACTIVE')}
-                      className="text-green-600 hover:text-green-800 text-xs font-bold"
-                      title="Set to Active and reset dates (12 months from today)"
-                    >
-                      Reactivate
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => handleOpenEdit(s)}
-                    className="text-blue-600 hover:text-blue-800 text-xs font-bold"
-                  >
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable 
+        data={sponsorships} 
+        columns={columns} 
+        filters={filters}
+        searchPlaceholder="Search sponsor name or email..."
+      />
 
       {/* Modal */}
       {isModalOpen && (

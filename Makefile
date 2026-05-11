@@ -26,7 +26,7 @@ endif
 
 # --- Phony Targets ---
 # Declare all targets as .PHONY to prevent conflicts with files of the same name.
-.PHONY: help build rebuild start stop shell logs test coverage
+.PHONY: help build rebuild start stop shell logs test coverage gen-secret
 
 # --- Help Target ---
 help:
@@ -38,6 +38,9 @@ help:
 	@echo "  rebuild           - Rebuild service images and restart."
 	@echo "  shell [SERVICE=web] - Access a shell inside a container."
 	@echo "  logs [SERVICE=web]  - Follow logs for a service."
+	@echo ""
+	@echo "Utility:"
+	@echo "  gen-secret        - Generate a NextAuth secret and append to .env"
 	@echo ""
 	@echo "Testing & Coverage:"
 	@echo "  test [SUITE=all]   - Run tests. SUITE can be 'unit', 'integration', 'ui', or 'all'."
@@ -77,3 +80,9 @@ coverage:
 	@echo "Running coverage for suite: $(SUITE)"
 	@echo "Report will be generated in: $(REPORTS_DIR)"
 	npm test -- $(TEST_PATH) --coverage --coverage.reportsDirectory=$(REPORTS_DIR)
+
+# --- Utility Targets ---
+gen-secret:
+	@echo "Generating NEXTAUTH_SECRET..."
+	@echo "NEXTAUTH_SECRET=\"$$(openssl rand -base64 32)\"" > .env
+	@echo "Secret written to .env"

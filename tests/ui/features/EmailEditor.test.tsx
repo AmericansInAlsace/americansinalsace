@@ -31,8 +31,16 @@ describe('EmailEditor', () => {
   });
 
   it('should render loading state', () => {
-    const { container } = render(<EmailEditor value="" onChange={() => {}} __test_loading={true} />);
-    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
+    render(<EmailEditor value="" onChange={() => {}} __test_loading={true} />);
+    expect(screen.getByTestId('quill-loading')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-quill')).not.toBeInTheDocument();
+  });
+
+  it('should render available placeholders', () => {
+    const placeholders = ['userName', 'actionUrl'];
+    render(<EmailEditor value="" onChange={() => {}} availablePlaceholders={placeholders} __test_loading={false} />);
+    
+    expect(screen.getByText('{{userName}}')).toBeInTheDocument();
+    expect(screen.getByText('{{actionUrl}}')).toBeInTheDocument();
   });
 });

@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { formatCurrency } from '@/lib/formatters';
 
 interface RevenueDataPoint {
   month: string; // e.g., 'Jan', 'Feb'
@@ -38,9 +39,9 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ data }) => {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="month" />
         <YAxis 
-          tickFormatter={(value) => `$${value.toLocaleString()}`} 
+          tickFormatter={(value) => formatCurrency(value)} 
         />
-        <Tooltip formatter={(value: any, name: any) => [`$${(Number(value) || 0).toLocaleString()}`, name]} />
+        <Tooltip formatter={(value: any, name: any) => [formatCurrency(value), name]} />
         <Legend />
         <Line type="monotone" dataKey="revenue" name="Current Revenue" stroke="#8884d8" activeDot={{ r: 8 }} />
         {data.some(d => d.previousRevenue !== undefined) && (

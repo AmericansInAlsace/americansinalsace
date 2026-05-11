@@ -24,6 +24,13 @@ vi.mock('@/services/MembershipService', () => ({
   },
 }));
 
+vi.mock('@/services/SponsorshipService', () => ({
+  SponsorshipService: {
+    getActiveSponsorship: vi.fn(),
+    getSponsorProfile: vi.fn(),
+  },
+}));
+
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(),

@@ -35,7 +35,7 @@ interface ManualPaymentModalProps {
 const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState(process.env.NEXT_PUBLIC_CURRENCY || 'EUR');
   const [type, setType] = useState(TRANSACTION_TYPES[0].value);
   const [status, setStatus] = useState(TRANSACTION_STATUSES[1].value); // Default to Success
   const [description, setDescription] = useState('');
@@ -48,7 +48,7 @@ const ManualPaymentModal: React.FC<ManualPaymentModalProps> = ({ isOpen, onClose
     if (isOpen) {
       setSelectedUserId(null);
       setAmount('');
-      setCurrency('USD');
+      setCurrency(process.env.NEXT_PUBLIC_CURRENCY || 'EUR');
       setType(TRANSACTION_TYPES[0].value);
       setStatus(TRANSACTION_STATUSES[1].value);
       setDescription('');

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { MembershipService } from '@/services/MembershipService';
+import { formatCurrency } from '@/lib/formatters';
 
 /**
  * Backoffice Membership Tiers Configuration Page.
@@ -39,7 +40,7 @@ export default async function TiersAdminPage() {
                     <div className="text-xs text-gray-500 max-w-xs truncate">{tier.description}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[var(--color-primary-blue)]">
-                    {tier.price}€ / yr
+                    {formatCurrency(tier.price)} / yr
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">
                     {tier.paypalPlanId || '---'}

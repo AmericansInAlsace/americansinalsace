@@ -1,7 +1,11 @@
 {
   "HomePage": {
     "title": "Bienvenue chez Americans <span>in Alsace</span>",
-    "description": "Connecter la communauté américaine dans la région Alsace."
+    "description": "Connecter la communauté américaine dans la région Alsace.",
+    "upcomingEvents": "Événements à Venir",
+    "viewAllEvents": "Voir Tous les Événements",
+    "noEvents": "Restez à l'écoute pour nos prochaines célébrations ! Les détails seront postés ici bientôt.",
+    "latestNews": "Dernières Nouvelles"
   },
   "Navbar": {
     "home": "Accueil",

@@ -47,7 +47,9 @@ describe('Navbar', () => {
 
     expect(screen.getByText('login')).toBeInTheDocument();
     expect(screen.getByText('register')).toBeInTheDocument();
-    expect(screen.queryByText('home')).not.toBeInTheDocument(); // Home only for logged in users according to the code
+    expect(screen.getByText('home')).toBeInTheDocument();
+    expect(screen.getByText('sponsors')).toBeInTheDocument();
+    expect(screen.queryByText('membership')).not.toBeInTheDocument();
   });
 
   it('renders authenticated state correctly without backoffice access', () => {

@@ -1,12 +1,13 @@
 // app/[locale]/backoffice/financials/page.tsx
 
 import { Suspense } from 'react';
-import { getDashboardStats } from '@/app/actions/backoffice';
+import { getDashboardStats, getAllTransactions } from '@/app/actions/backoffice';
 import RevenueChart from '@/components/ui/RevenueChart';
 import CategoryPieChart from '@/components/ui/CategoryPieChart';
 import MemberGrowthChart from '@/components/ui/MemberGrowthChart';
 import TransactionTable from '@/components/ui/TransactionTable';
 import FinancialActions from './FinancialActions';
+import { formatCurrency } from '@/lib/formatters';
 
 // Placeholder for KPI card component
 interface KpiCardProps {
@@ -17,7 +18,7 @@ interface KpiCardProps {
   error?: string;
 }
 
-const KpiCard: React.FC<KpiCardProps> = ({ title, value = 0, currency = 'USD', isLoading, error }) => {
+const KpiCard: React.FC<KpiCardProps> = ({ title, value = 0, currency, isLoading, error }) => {
   if (isLoading) {
     return (
       <div className="bg-white p-4 rounded shadow animate-pulse">
@@ -38,7 +39,7 @@ const KpiCard: React.FC<KpiCardProps> = ({ title, value = 0, currency = 'USD', i
 
   // Format currency value if it's a number
   const formattedValue = typeof value === 'number'
-    ? value.toLocaleString(undefined, { style: 'currency', currency })
+    ? formatCurrency(value, currency)
     : value;
 
   return (
@@ -51,7 +52,7 @@ const KpiCard: React.FC<KpiCardProps> = ({ title, value = 0, currency = 'USD', i
 
 // Component to fetch and display dashboard statistics and charts
 const DashboardContent = async () => {
-  // Dummy data for charts and table - in a real app, these would be fetched via server actions
+  // Dummy data for charts - in a real app, these would be fetched via specialized trend actions
   const revenueChartData = [
     { month: 'Jan', revenue: 1200, previousRevenue: 1000 },
     { month: 'Feb', revenue: 1500, previousRevenue: 1200 },
@@ -63,7 +64,7 @@ const DashboardContent = async () => {
   const categoryPieChartData = [
     { name: 'Subscriptions', value: 800, color: '#0088FE' },
     { name: 'Event Tickets', value: 400, color: '#00C49F' },
-    { name: 'Merchandise', value: 200, color: '#FFBB28' },
+    { name: 'Sponsorships', value: 200, color: '#FFBB28' },
     { name: 'Other', value: 100, color: '#FF8042' },
   ];
 
@@ -75,80 +76,58 @@ const DashboardContent = async () => {
     { date: '2024-05-01', activeMembers: 210, newMembers: 22 },
   ];
 
-  // Dummy data for TransactionTable
-  const dummyTransactions = [
-    { id: 1, userId: 1, amount: 50, currency: 'USD', type: 'SUBSCRIPTION_PAYMENT', status: 'SUCCESS', transactionDate: '2024-05-08', user: { id: 1, email: 'user1@example.com', firstName: 'Alice', lastName: 'Smith' }, description: 'Monthly Subscription', paypalTransactionId: 'ch_123abc' },
-    { id: 2, userId: 2, amount: 25, currency: 'USD', type: 'EVENT_TICKET', status: 'SUCCESS', transactionDate: '2024-05-07', user: { id: 2, email: 'user2@example.com', firstName: 'Bob', lastName: 'Johnson' }, description: 'Spring Gala Ticket', paypalTransactionId: 'ch_456def' },
-    { id: 3, userId: 1, amount: 10, currency: 'USD', type: 'REFUND', status: 'PENDING', transactionDate: '2024-05-06', user: { id: 1, email: 'user1@example.com', firstName: 'Alice', lastName: 'Smith' }, description: 'Partial Refund for Order #XYZ' },
-    { id: 4, userId: 3, amount: 100, currency: 'USD', type: 'MANUAL_PAYMENT', status: 'SUCCESS', transactionDate: '2024-05-05', user: { id: 3, email: 'admin@example.com', firstName: 'Admin', lastName: 'User' }, description: 'Manual payment for services' },
-  ];
-
   try {
-    const stats = await getDashboardStats();
+    const [stats, transactions] = await Promise.all([
+      getDashboardStats(),
+      getAllTransactions(),
+    ]);
 
     return (
       <>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          <KpiCard title="Total Revenue" value={stats.totalRevenue} currency="USD" />
-          <KpiCard title="Total Expenses" value={stats.totalExpenses} currency="USD" />
-          <KpiCard title="Net Profit" value={stats.netProfit} currency="USD" />
+          <KpiCard title="Total Revenue" value={stats.totalRevenue} />
+          <KpiCard title="Total Expenses" value={stats.totalExpenses} />
+          <KpiCard title="Net Profit" value={stats.netProfit} />
           <KpiCard title="Total Transactions" value={stats.numberOfTransactions} />
         </div>
 
         {/* Charts Section */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-white p-6 rounded shadow">
-            <h2 className="text-xl font-semibold mb-4">Revenue Trend</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Revenue Trend</h2>
             <RevenueChart data={revenueChartData} />
           </div>
           <div className="bg-white p-6 rounded shadow">
-            <h2 className="text-xl font-semibold mb-4">Transaction Breakdown</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">Transaction Breakdown</h2>
             <CategoryPieChart data={categoryPieChartData} />
           </div>
         </div>
         
         <div className="mt-8 bg-white p-6 rounded shadow">
-          <h2 className="text-xl font-semibold mb-4">Member Growth</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Member Growth</h2>
           <MemberGrowthChart data={memberGrowthChartData} />
         </div>
         
         {/* Transaction Table Section */}
-        <div className="mt-8">
-          <TransactionTable transactions={dummyTransactions} />
+        <div className="mt-12">
+          <header className="mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 font-serif">Recent Transactions</h2>
+            <p className="text-gray-500 text-sm">Detailed history of all financial activities.</p>
+          </header>
+          <TransactionTable transactions={transactions} />
         </div>
       </>
     );
   } catch (error: any) {
     console.error('Failed to fetch dashboard stats:', error);
     return (
-      <>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          <KpiCard title="Total Revenue" error="Failed to load" />
-          <KpiCard title="Total Expenses" error="Failed to load" />
-          <KpiCard title="Net Profit" error="Failed to load" />
-          <KpiCard title="Total Transactions" error="Failed to load" />
-        </div>
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded shadow">
-            <h2 className="text-xl font-semibold mb-4">Revenue Trend</h2>
-            <p className="text-red-500">Failed to load chart data.</p>
-          </div>
-          <div className="bg-white p-6 rounded shadow">
-            <h2 className="text-xl font-semibold mb-4">Transaction Breakdown</h2>
-            <p className="text-red-500">Failed to load chart data.</p>
-          </div>
-        </div>
-        <div className="mt-8 bg-white p-6 rounded shadow">
-          <h2 className="text-xl font-semibold mb-4">Member Growth</h2>
-          <p className="text-red-500">Failed to load chart data.</p>
-        </div>
-        <div className="mt-8">
-           <p className="text-red-500">Failed to load transaction data.</p>
-        </div>
-      </>
+      <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+        <p className="text-red-700 font-medium">Failed to load dashboard data. Please try again later.</p>
+      </div>
     );
   }
 };
+
 
 // Main page component
 export default function FinancialDashboardPage() {

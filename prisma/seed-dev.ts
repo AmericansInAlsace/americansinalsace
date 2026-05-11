@@ -1,13 +1,20 @@
 
-import { PrismaClient } from '../lib/generated/prisma';
+import { PrismaClient } from '../lib/generated/prisma_dev';
 import { faker } from '@faker-js/faker';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
+import argon2 from 'argon2';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL?.replace('@db:', '@localhost:');
+const pool = new pg.Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('Starting dev seeding...');
 
-  // 1. Clean up existing data
+  // 1. Clean up mock data only (don't delete roles, tiers, or categories seeded by seed.ts)
   await prisma.transaction.deleteMany({});
   await prisma.rSVP.deleteMany({});
   await prisma.sponsorship.deleteMany({});
@@ -15,65 +22,56 @@ async function main() {
   await prisma.subscription.deleteMany({});
   await prisma.user.deleteMany({});
   await prisma.event.deleteMany({});
-  await prisma.eventCategory.deleteMany({});
-  await prisma.membershipTier.deleteMany({});
-  await prisma.sponsorTier.deleteMany({});
-  await prisma.role.deleteMany({});
 
+  // 2. Fetch existing Roles
+  const superAdminRole = await prisma.role.findUnique({ where: { name: 'SUPERADMIN' } });
+  const basicUserRole = await prisma.role.findUnique({ where: { name: 'BASIC_USER' } });
+  
+  if (!superAdminRole || !basicUserRole) {
+    throw new Error('Roles not found. Please run npm run db:seed first.');
+  }
 
-  // 2. Create Roles
-  const adminRole = await prisma.role.create({ data: { name: 'admin' } });
-  const memberRole = await prisma.role.create({ data: { name: 'member' } });
-  const sponsorRole = await prisma.role.create({ data: { name: 'sponsor' } });
-
-  // 3. Create Membership Tiers
-  const tiers = await prisma.membershipTier.createMany({
-    data: [
-      { name: 'Student', description: 'For students.', price: 30.00 },
-      { name: 'Individual', description: 'For single members.', price: 50.00 },
-      { name: 'Family', description: 'For families.', price: 85.00 },
-    ],
+  // 3. Create Admin account
+  const adminPassword = await argon2.hash('admin');
+  await prisma.user.create({
+    data: {
+      firstName: 'Admin',
+      lastName: 'User',
+      email: 'admin@americansinalsace.com',
+      password: adminPassword,
+      emailVerified: new Date(),
+      roleId: superAdminRole.id,
+    },
   });
+  console.log('Created admin/admin account with SUPERADMIN role.');
+
+  // 4. Use existing Membership Tiers
   const membershipTiers = await prisma.membershipTier.findMany();
 
-  // 4. Create Sponsor Tiers
-  await prisma.sponsorTier.createMany({
-    data: [
-        { name: 'Bronze', description: 'Basic sponsorship.', price: 500, priority: 1 },
-        { name: 'Silver', description: 'Mid-level sponsorship.', price: 1000, priority: 2 },
-        { name: 'Gold', description: 'Premium sponsorship.', price: 2500, priority: 3 },
-    ]
-  })
+  // 5. Use existing Sponsor Tiers
   const sponsorTiers = await prisma.sponsorTier.findMany();
+  if (sponsorTiers.length === 0) {
+    throw new Error('Sponsor Tiers not found. Please run npm run db:seed first.');
+  }
 
 
-  // 5. Create Users & Associated Data
+  // 6. Create Mock Users & Associated Data
   const usersToCreate = 100;
-  let adminCreated = false;
   for (let i = 0; i < usersToCreate; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const email = faker.internet.email({ firstName, lastName });
     const isSponsor = Math.random() < 0.1; // 10% are sponsors
     const isMember = !isSponsor && Math.random() < 0.9; // 90% of non-sponsors are members
-    const isActiveMember = isMember && Math.random() > 0.15; // 85% of members are active
-
-    let roleId = memberRole.id;
-    if (!adminCreated) {
-        roleId = adminRole.id;
-        adminCreated = true;
-    } else if (isSponsor) {
-        roleId = sponsorRole.id;
-    }
 
     const user = await prisma.user.create({
       data: {
         firstName,
         lastName,
         email,
-        password: 'password-placeholder', // In a real scenario, this should be hashed
+        password: 'password-placeholder',
         emailVerified: new Date(),
-        roleId: roleId,
+        roleId: basicUserRole.id,
         createdAt: faker.date.past({ years: 2 }),
       },
     });
@@ -81,18 +79,22 @@ async function main() {
     // Create subscription for members
     if (isMember) {
       const tier = faker.helpers.arrayElement(membershipTiers);
-      const subscription = await prisma.subscription.create({
+      const status = faker.helpers.arrayElement(['ACTIVE', 'PENDING', 'CANCELLED', 'EXPIRED']);
+      const isActuallyActive = status === 'ACTIVE';
+      const hasTransaction = ['ACTIVE', 'CANCELLED', 'EXPIRED'].includes(status);
+
+      await prisma.subscription.create({
         data: {
           userId: user.id,
           tierId: tier.id,
-          status: isActiveMember ? 'ACTIVE' : 'INACTIVE',
-          startDate: isActiveMember ? faker.date.past({ years: 1 }) : null,
-          endDate: isActiveMember ? faker.date.future({ years: 1 }) : null,
+          status: status,
+          startDate: status !== 'PENDING' ? faker.date.past({ years: 1 }) : null,
+          endDate: status === 'EXPIRED' ? faker.date.past() : (status === 'PENDING' ? null : faker.date.future({ years: 1 })),
         },
       });
 
-      // Create transaction for active members
-      if (isActiveMember) {
+      // Create transaction for memberships that are/were active
+      if (hasTransaction) {
         await prisma.transaction.create({
           data: {
             userId: user.id,
@@ -140,22 +142,17 @@ async function main() {
     }
   }
 
-  // 6. Create Event Categories and Events
-  const eventCategories = await Promise.all([
-      prisma.eventCategory.create({ data: { name: 'Social Gathering', description: 'General get-togethers.' } }),
-      prisma.eventCategory.create({ data: { name: 'Holiday Special', description: 'Events for special holidays.' } }),
-      prisma.eventCategory.create({ data: { name: 'Workshop', description: 'Educational workshops.' } }),
-      prisma.eventCategory.create({ data: { name: 'Recurring Meetup', description: 'Our regular monthly meetups.' } }),
-  ]);
+  // 7. Create Events using existing categories
+  const eventCategories = await prisma.eventCategory.findMany();
 
   // One-off events
   for (let i = 0; i < 5; i++) {
-    const memberPrice = faker.number.float({ min: 20, max: 30, precision: 0.01 });
+    const memberPrice = faker.number.float({ min: 20, max: 30, fractionDigits: 2 });
     await prisma.event.create({
       data: {
         title: faker.lorem.sentence(4),
         description: faker.lorem.paragraphs(3),
-        date: faker.date.future({ months: 6 }),
+        date: faker.date.future(),
         location: faker.location.streetAddress(),
         capacity: faker.number.int({ min: 20, max: 100 }),
         memberPrice: memberPrice,
@@ -168,7 +165,7 @@ async function main() {
 
   // Recurring event
   for (let i = 0; i < 6; i++) {
-     const memberPrice = faker.number.float({ min: 20, max: 30, precision: 0.01 });
+     const memberPrice = faker.number.float({ min: 20, max: 30, fractionDigits: 2 });
      const eventDate = new Date();
      eventDate.setMonth(eventDate.getMonth() + i);
      await prisma.event.create({
@@ -181,10 +178,11 @@ async function main() {
             memberPrice: memberPrice,
             nonMemberPrice: memberPrice + 5,
             published: true,
-            categoryId: eventCategories.find(c => c.name === 'Recurring Meetup')!.id,
+            categoryId: eventCategories[0].id, // Default to first category
         }
      })
   }
+
    // Simulate some event signups and transactions
   const allUsers = await prisma.user.findMany();
   const allEvents = await prisma.event.findMany({where: {published: true}});

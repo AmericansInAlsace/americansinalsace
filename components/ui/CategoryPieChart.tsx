@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { formatCurrency } from '@/lib/formatters';
 
 interface CategoryDataPoint {
   name: string; // Category name
@@ -44,7 +45,7 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
           ))}
         </Pie>
         <Tooltip formatter={(value: any, name: any) => {
-          return [`$${(Number(value) || 0).toLocaleString()}`, name];
+          return [formatCurrency(value), name];
         }} />
         <Legend />
       </PieChart>

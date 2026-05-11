@@ -1,6 +1,7 @@
 'use server';
 
 import { AuthService } from '@/services/AuthService';
+import { LoggerService } from '@/services/LoggerService';
 
 /**
  * Handles the registration of a new user via the UI.
@@ -16,7 +17,7 @@ export async function handleRegister(formData: FormData): Promise<{ success?: bo
     await AuthService.registerUser(data);
     return { success: true };
   } catch (error: any) {
-    console.error('Registration action error:', error.message);
+    await LoggerService.error('WEB', `Registration failed for ${data.email}`, { error: error.message });
     return { error: error.message || 'Something went wrong during registration' };
   }
 }

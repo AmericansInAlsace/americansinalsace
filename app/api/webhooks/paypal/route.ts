@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         // Now, create a corresponding transaction record
         const membershipTier = await prisma.membershipTier.findUnique({
           where: { id: tierId },
-          select: { price: true, name: true, currency: true },
+          select: { price: true, name: true },
         });
 
         if (!membershipTier) {
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
         await recordManualPayment({
           userId: userId,
           amount: membershipTier.price as any, // Cast if necessary or ensure service handles number
-          currency: (membershipTier as any).currency || 'USD', 
+          currency: process.env.NEXT_PUBLIC_CURRENCY || 'EUR', 
           type: 'SUBSCRIPTION_PAYMENT',
           status: 'SUCCESS',
           description: `Subscription payment for ${membershipTier.name}`,
