@@ -4,6 +4,15 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   error?: string;
 }
 
+/**
+ * A styled input component that includes built-in support for displaying an error message.
+ * It forwards refs to the underlying HTML input element.
+ *
+ * @param {React.ForwardedRef<HTMLInputElement>} ref - A ref to the underlying input element.
+ * @param {InputProps} props - The props for the component.
+ * @param {string} [props.className] - Additional CSS classes to apply to the input.
+ * @param {string} [props.error] - If provided, displays an error message below the input and applies error styling.
+ */
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className = '', error, ...props }, ref) => {
     return (

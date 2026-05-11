@@ -1,0 +1,25 @@
+{
+  "HomePage": {
+    "title": "Bienvenue chez Americans <span>in Alsace</span>",
+    "description": "Connecter la communauté américaine dans la région Alsace."
+  },
+  "Navbar": {
+    "home": "Accueil",
+    "membership": "Adhésion",
+    "sponsors": "Sponsors",
+    "profile": "Profil",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "logout": "Déconnexion"
+  },
+  "Auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "email": "Email",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "alreadyHaveAccount": "Déjà un compte ? Connectez-vous",
+    "dontHaveAccount": "Pas de compte ? Inscrivez-vous"
+  }
+}

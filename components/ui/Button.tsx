@@ -6,6 +6,18 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
 }
 
+/**
+ * A versatile button component that supports different visual styles, sizes, and a loading state.
+ * It is built on top of the standard HTML button element and forwards refs to it.
+ *
+ * @param {React.ForwardedRef<HTMLButtonElement>} ref - A ref to the underlying button element.
+ * @param {ButtonProps} props - The props for the component.
+ * @param {string} [props.className] - Additional CSS classes to apply.
+ * @param {'primary' | 'secondary' | 'outline' | 'ghost'} [props.variant='primary'] - The visual style of the button.
+ * @param {'sm' | 'md' | 'lg'} [props.size='md'] - The size of the button.
+ * @param {boolean} [props.isLoading] - If true, shows a loading spinner and disables the button.
+ * @param {React.ReactNode} props.children - The content to display inside the button.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
     const baseStyles = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none disabled:opacity-50';

@@ -14,8 +14,8 @@ A bridge between North American heritage (USA/Canada) and Alsatian residence. Th
 - **Body**: Inter/Sans-serif - for modern readability.
 
 ## Logo & Assets
-- **Logo**: /public/logo.svg (Recreated with a completed circular frame).
-- **Favicon**: Uses the SVG logo directly.
+- **Logo**: /public/AIA_copy.png
+- **Favicon**: /public/favicon.ico
 
 ## UI Patterns
 - Use **Red** for primary calls to action (CTAs).

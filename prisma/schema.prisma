@@ -1,7 +1,7 @@
 generator client {
   provider      = "prisma-client"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
   output        = "../lib/generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -9,12 +9,188 @@ datasource db {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  firstName String
-  lastName  String
-  email     String  @unique
-  password  String
-  bio       String?
-  avatar    String?
-  phone     String?
+  id                Int           @id @default(autoincrement())
+  firstName         String
+  lastName          String
+  email             String        @unique
+  password          String
+  bio               String?
+  avatar            String?
+  phone             String?
+  emailVerified     DateTime?
+  tokenExpires      DateTime?
+  verificationToken String?       @unique
+  resetToken        String?       @unique
+  resetTokenExpires DateTime?
+  roleId            Int?
+  subscription      Subscription?
+  role              Role?         @relation(fields: [roleId], references: [id])
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @default(now()) @updatedAt
+  rsvps             RSVP[]
+  transactions      Transaction[]
+  sponsorships      Sponsorship[]
+  sponsorProfile    SponsorProfile?
+}
+
+model Role {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  users       User[]
+  permissions Permission[] @relation("PermissionToRole")
+}
+
+model Permission {
+  id       Int    @id @default(autoincrement())
+  action   Action
+  resource String
+  roles    Role[] @relation("PermissionToRole")
+
+  @@unique([action, resource])
+}
+
+model MembershipTier {
+  id            Int            @id @default(autoincrement())
+  name          String
+  description   String
+  price         Float
+  paypalPlanId  String?        @unique
+  active        Boolean        @default(true)
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id                   Int            @id @default(autoincrement())
+  userId               Int            @unique
+  tierId               Int
+  status               String         @default("PENDING")
+  paypalSubscriptionId String?        @unique
+  startDate            DateTime?
+  endDate              DateTime?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @default(now()) @updatedAt
+  tier                 MembershipTier @relation(fields: [tierId], references: [id])
+  user                 User           @relation(fields: [userId], references: [id])
+}
+
+model EventCategory {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  events      Event[]
+}
+
+model Event {
+  id             Int           @id @default(autoincrement())
+  title          String
+  description    String        @db.Text
+  date           DateTime
+  location       String
+  capacity       Int?
+  memberPrice    Float         @default(0)
+  nonMemberPrice Float         @default(0)
+  published      Boolean       @default(false)
+  categoryId     Int
+  category       EventCategory @relation(fields: [categoryId], references: [id])
+  rsvps          RSVP[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model RSVP {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  eventId   Int
+  status    String   @default("CONFIRMED")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  event     Event    @relation(fields: [eventId], references: [id])
+
+  @@unique([userId, eventId])
+}
+
+model EmailTemplate {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique // e.g., "verification-email", "reset-password"
+  name      String
+  subject   String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailLog {
+  id        Int      @id @default(autoincrement())
+  recipient String
+  subject   String
+  status    String // "SUCCESS" or "FAILED"
+  error     String?
+  sentAt    DateTime @default(now())
+}
+
+model ImprovementCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SponsorTier {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  description   String?
+  price         Decimal
+  active        Boolean       @default(true)
+  priority      Int           @default(0) // Higher priority for better display positions
+  sponsorships  Sponsorship[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Sponsorship {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  tierId    Int
+  startDate DateTime @default(now())
+  endDate   DateTime
+  status    String   @default("ACTIVE") // "ACTIVE", "EXPIRED", "CANCELLED"
+  user      User     @relation(fields: [userId], references: [id])
+  tier      SponsorTier @relation(fields: [tierId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model SponsorProfile {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  companyName String
+  websiteUrl  String?
+  logoUrl     String?
+  bio         String?  @db.Text
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Action {
+  READ
+  WRITE
+}
+
+model Transaction {
+  id                  Int      @id @default(autoincrement())
+  userId              Int
+  amount              Decimal  @db.Decimal(10, 2)
+  currency            String   @default("USD")
+  type                String
+  status              String
+  paypalTransactionId String?  @unique
+  description         String?
+  transactionDate     DateTime @default(now())
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id])
 }

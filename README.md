@@ -1,32 +1,32 @@
-# Americansinalsace
+# Americans in Alsace
 
 A minimal Dockerized Next.js + TypeScript + Node + PostgreSQL scaffold.
 
-## Run locally with Docker
+## Local Development
 
-1. Build and start services:
+1.  **Build and start services:**
+    ```bash
+    docker compose up --build
+    ```
+2.  **Open the app:**
+    Navigate to `http://localhost:3000` in your browser.
+3.  **API endpoint:**
+    The API is available at `http://localhost:3000/api/users`.
 
-```bash
-docker compose up --build
-```
+## Project Structure & Architecture
 
-2. Open the app:
+For a detailed understanding of the project's architecture, directory organization, and data flow, please refer to the [Architecture Design Document](./docs/architecture-design-document.md).
 
-```bash
-http://localhost:3000
-```
+## Documentation
 
-3. API endpoint:
+This project includes comprehensive documentation within the `docs/` directory. The main index can be found at [docs/index.md](./docs/index.md).
 
-```bash
-http://localhost:3000/api/users
-```
+## Key Files
 
-## Project structure
-
-- `app/` — Next.js app router pages
-- `app/api/users/route.ts` — server route that queries PostgreSQL
-- `lib/db.ts` — PostgreSQL pool helper
-- `docker-compose.yml` — app + database services
-- `Dockerfile` — production build image
-- `database/init.sql` — database initialization script
+- `app/` — Next.js app router pages and server logic.
+- `app/actions/auth.ts` — Server Actions for user authentication flows.
+- `lib/db.ts` — Prisma client singleton for database interactions.
+- `services/` — Core business logic, decoupled from the framework.
+- `docker-compose.yml` — Defines local development services (app + database).
+- `Dockerfile` — Production build image configuration.
+- `prisma/schema.prisma` — Database schema and Prisma configuration.

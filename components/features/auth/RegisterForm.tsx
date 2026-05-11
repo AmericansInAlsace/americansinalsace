@@ -81,7 +81,7 @@ export function RegisterForm(): React.JSX.Element {
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" required />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full" isLoading={isLoading}>

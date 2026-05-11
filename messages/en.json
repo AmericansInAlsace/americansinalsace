@@ -1,0 +1,25 @@
+{
+  "HomePage": {
+    "title": "Welcome to Americans <span>in Alsace</span>",
+    "description": "Connecting the American community in the Alsace region."
+  },
+  "Navbar": {
+    "home": "Home",
+    "membership": "Membership",
+    "sponsors": "Sponsors",
+    "profile": "Profile",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  },
+  "Auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "alreadyHaveAccount": "Already have an account? Login",
+    "dontHaveAccount": "Don't have an account? Register"
+  }
+}

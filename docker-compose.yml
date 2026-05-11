@@ -6,7 +6,7 @@ services:
     ports:
       - '3000:3000'
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/app_db
+      DATABASE_URL: postgres://postgres:postgres@db:5432/app_db?schema=public
       SMTP_HOST: maildev
       SMTP_PORT: 1025
     depends_on:
@@ -16,7 +16,7 @@ services:
         condition: service_started
     volumes:
       - .:/app
-    command: sh -c "apk add --no-cache openssl && npm install --legacy-peer-deps && npx prisma generate && npx prisma migrate deploy && npm run dev -- --hostname 0.0.0.0"
+    command: sh -c "apk add --no-cache openssl && npm install --legacy-peer-deps && npx prisma generate && sleep 15 && npx prisma migrate deploy && npm run dev -- --hostname 0.0.0.0"
 
   db:
     image: postgres:15-alpine
@@ -29,7 +29,6 @@ services:
       POSTGRES_DB: app_db
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d app_db"]
       interval: 5s

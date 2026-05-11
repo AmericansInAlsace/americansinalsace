@@ -1,49 +1,23 @@
 'use server';
 
-import { prisma } from '@/lib/db';
-import argon2 from 'argon2';
+import { AuthService } from '@/services/AuthService';
 
 /**
- * Handles the registration of a new user.
+ * Handles the registration of a new user via the UI.
  * 
- * @description Validates the form data, hashes the password, and creates a user in the database.
+ * @description Validates the form data and delegates the registration logic to the AuthService.
  * @param {FormData} formData - The form data containing user details (firstName, lastName, email, password).
  * @returns {Promise<{ success?: boolean; error?: string }>} An object indicating success or an error message.
  */
 export async function handleRegister(formData: FormData): Promise<{ success?: boolean; error?: string }> {
-  const firstName = formData.get('firstName') as string;
-  const lastName = formData.get('lastName') as string;
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-
-  if (!firstName || !lastName || !email || !password) {
-    return { error: 'All fields are required' };
-  }
+  const data = Object.fromEntries(formData.entries());
 
   try {
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return { error: 'User already exists' };
-    }
-
-    const hashedPassword = await argon2.hash(password);
-
-    await prisma.user.create({
-      data: {
-        firstName,
-        lastName,
-        email,
-        password: hashedPassword,
-      },
-    });
-
+    await AuthService.registerUser(data);
     return { success: true };
-  } catch (error) {
-    console.error('Registration error:', error);
-    return { error: 'Something went wrong during registration' };
+  } catch (error: any) {
+    console.error('Registration action error:', error.message);
+    return { error: error.message || 'Something went wrong during registration' };
   }
 }
 

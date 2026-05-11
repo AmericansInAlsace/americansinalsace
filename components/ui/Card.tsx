@@ -2,6 +2,10 @@ import React from 'react';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
+/**
+ * A container component that renders a styled card with a border and shadow.
+ * It serves as the main wrapper for card content.
+ */
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className = '', ...props }, ref) => (
     <div
@@ -13,6 +17,10 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
 );
 Card.displayName = 'Card';
 
+/**
+ * A header component for the Card. Typically contains a CardTitle and CardDescription.
+ * Provides default padding and flex layout.
+ */
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className = '', ...props }, ref) => (
     <div
@@ -24,6 +32,9 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 );
 CardHeader.displayName = 'CardHeader';
 
+/**
+ * A title component for the CardHeader. Renders an `<h3>` tag with default styling.
+ */
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className = '', ...props }, ref) => (
     <h3
@@ -35,6 +46,9 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
 );
 CardTitle.displayName = 'CardTitle';
 
+/**
+ * A description component for the CardHeader. Renders a `<p>` tag with muted text styling.
+ */
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className = '', ...props }, ref) => (
     <p
@@ -46,6 +60,9 @@ const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttribu
 );
 CardDescription.displayName = 'CardDescription';
 
+/**
+ * The main content area for a Card. Provides default padding.
+ */
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className = '', ...props }, ref) => (
     <div ref={ref} className={`p-6 pt-0 ${className}`} {...props} />
@@ -53,6 +70,10 @@ const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
 );
 CardContent.displayName = 'CardContent';
 
+/**
+ * A footer component for the Card. Provides default padding and flex layout.
+ * Often used for action buttons or supplemental text.
+ */
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className = '', ...props }, ref) => (
     <div
