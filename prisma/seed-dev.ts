@@ -1,5 +1,5 @@
 
-import { PrismaClient } from '../lib/generated/prisma_dev';
+import { PrismaClient } from '../lib/generated/prisma';
 import { faker } from '@faker-js/faker';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';

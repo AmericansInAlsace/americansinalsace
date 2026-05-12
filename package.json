@@ -5,10 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:staging": "NODE_OPTIONS='--max-old-space-size=1536' next build",
     "start": "next start",
     "lint": "next lint .",
     "test": "vitest run",
-    "db:seed:dev": "npx prisma db seed && tsx prisma/seed-dev.ts"
+    "db:up": "docker compose up -d db",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:seed:dev": "npx prisma db seed && tsx prisma/seed-dev.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^9.2.0",

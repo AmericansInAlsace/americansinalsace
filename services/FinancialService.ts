@@ -1,6 +1,6 @@
 // services/FinancialService.ts
 
-import { Prisma } from '@/lib/generated/prisma/client'; // Import Prisma for Decimal type
+import { Prisma } from '@/lib/generated/prisma'; // Import Prisma for Decimal type
 import { prisma } from '@/lib/db';
 
 export interface Transaction {

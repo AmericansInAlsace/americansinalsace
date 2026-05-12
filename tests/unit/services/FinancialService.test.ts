@@ -3,7 +3,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { getTransactionHistory, getFinancialSummary, recordManualPayment } from '@/services/FinancialService';
 import { prisma } from '@/lib/db';
-import { Prisma } from '@/lib/generated/prisma/client';
+import { Prisma } from '@/lib/generated/prisma';
 
 // Mock the db module
 vi.mock('@/lib/db', () => ({

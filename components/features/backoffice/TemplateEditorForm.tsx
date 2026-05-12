@@ -136,7 +136,7 @@ export function TemplateEditorForm({ template }: { template: Template }) {
                 <div className="text-xs text-gray-400 font-bold uppercase mb-1">Subject:</div>
                 <div className="text-lg font-bold">{subject}</div>
               </div>
-              <div dangerouslySetInnerHTML={{ __react_quill_fix__: content, __html: previewContent }} />
+              <div dangerouslySetInnerHTML={{ __html: previewContent }} />
             </div>
           </div>
           <p className="mt-4 text-xs text-gray-400 italic">

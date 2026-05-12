@@ -6,11 +6,20 @@ import 'react-quill-new/dist/quill.snow.css';
 
 /**
  * Dynamic import of ReactQuill to prevent SSR issues.
+ * Supports ref forwarding for editor access.
  */
-const ReactQuill = dynamic(() => import('react-quill-new'), { 
-  ssr: false,
-  loading: () => <div data-testid="quill-loading" className="h-[400px] w-full bg-gray-50 animate-pulse rounded-lg border border-gray-200"></div>
-});
+const ReactQuill = dynamic(
+  async () => {
+    const { default: RQ } = await import('react-quill-new');
+    return function ReactQuill({ forwardedRef, ...props }: any) {
+      return <RQ ref={forwardedRef} {...props} />;
+    };
+  },
+  { 
+    ssr: false,
+    loading: () => <div data-testid="quill-loading" className="h-[400px] w-full bg-gray-50 animate-pulse rounded-lg border border-gray-200"></div>
+  }
+);
 
 interface EmailEditorProps {
   value: string;
@@ -75,7 +84,7 @@ export function EmailEditor({ value, onChange, id, availablePlaceholders = [], _
       )}
       <div className="flex-grow">
         <ReactQuill
-          ref={quillRef}
+          forwardedRef={quillRef}
           theme="snow"
           value={value}
           onChange={onChange}

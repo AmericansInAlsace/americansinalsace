@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { convertToCSV, downloadCSV } from '@/lib/csvUtils';
-import { Prisma } from '@/lib/generated/prisma/client';
+import { Prisma } from '@/lib/generated/prisma';
 
 describe('lib/csvUtils', () => {
   describe('convertToCSV', () => {

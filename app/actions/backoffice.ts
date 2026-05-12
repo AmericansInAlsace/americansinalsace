@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { Prisma } from '@/lib/generated/prisma/client'; // Import Prisma.Decimal for monetary values
+import { Prisma } from '@/lib/generated/prisma'; // Import Prisma.Decimal for monetary values
 import { getFinancialSummary, recordManualPayment, Transaction } from '@/services/FinancialService'; // Import FinancialService functions
 
 // Define interfaces for clarity if not already defined elsewhere and needed for action return types

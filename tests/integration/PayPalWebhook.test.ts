@@ -7,7 +7,7 @@ import { PayPalService } from '@/services/PayPalService';
 import * as FinancialService from '@/services/FinancialService';
 import { prisma } from '@/lib/db'; // Mock prisma for direct DB interactions
 import { NextRequest } from 'next/server';
-import { Prisma } from '@/lib/generated/prisma/client';
+import { Prisma } from '@/lib/generated/prisma';
 
 // Mock all services and prisma client used by the webhook handler
 vi.mock('@/services/MembershipService');

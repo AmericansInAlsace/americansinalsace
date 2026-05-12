@@ -1,4 +1,4 @@
-import { PrismaClient } from './generated/prisma_dev';
+import { PrismaClient } from './generated/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
@@ -45,7 +45,9 @@ const createPrismaClient = () => {
   });
 };
 
-export const prisma = globalForPrisma[PRISMA_SINGLETON_KEY] || createPrismaClient();
+type ExtendedPrismaClient = ReturnType<typeof createPrismaClient>;
+
+export const prisma: ExtendedPrismaClient = globalForPrisma[PRISMA_SINGLETON_KEY] || createPrismaClient();
 export const basePrisma = new PrismaClient({ adapter });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma[PRISMA_SINGLETON_KEY] = prisma;

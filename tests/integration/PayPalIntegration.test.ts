@@ -3,7 +3,7 @@ import { POST } from '@/app/api/webhooks/paypal/route';
 import { MembershipService } from '@/services/MembershipService';
 import { PayPalService } from '@/services/PayPalService';
 import { NextRequest } from 'next/server';
-import { Prisma } from '@/lib/generated/prisma/client';
+import { Prisma } from '@/lib/generated/prisma';
 
 vi.mock('@/services/MembershipService');
 vi.mock('@/services/PayPalService');

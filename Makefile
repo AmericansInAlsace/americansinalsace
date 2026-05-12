@@ -6,6 +6,8 @@
 SERVICE ?= web
 # Default test suite. Override with `make test SUITE=unit`
 SUITE ?= all
+# Default environment file for staging
+ENV_FILE ?= .env
 
 # --- Path Logic ---
 # Determine the test path and coverage directory based on the SUITE variable.
@@ -26,7 +28,7 @@ endif
 
 # --- Phony Targets ---
 # Declare all targets as .PHONY to prevent conflicts with files of the same name.
-.PHONY: help build rebuild start stop shell logs test coverage gen-secret
+.PHONY: help build rebuild start stop shell logs test coverage gen-secret setup-env db-up migrate seed seed-dev build-staging deploy-staging check-env
 
 # --- Help Target ---
 help:
@@ -38,6 +40,15 @@ help:
 	@echo "  rebuild           - Rebuild service images and restart."
 	@echo "  shell [SERVICE=web] - Access a shell inside a container."
 	@echo "  logs [SERVICE=web]  - Follow logs for a service."
+	@echo "  seed-dev          - Seed the database with development mock data (requires DB up)"
+	@echo ""
+	@echo "Staging Deployment (Raspberry Pi):"
+	@echo "  setup-env         - Create .env from .env.development.local and generate NEXTAUTH_SECRET"
+	@echo "  deploy-staging    - Run the entire staging deployment pipeline (Production seed)"
+	@echo "  db-up             - Start the Postgres database container (for staging)"
+	@echo "  migrate           - Run Prisma migrations"
+	@echo "  seed              - Seed the database with CORE production data only"
+	@echo "  build-staging     - Build the Next.js app for staging"
 	@echo ""
 	@echo "Utility:"
 	@echo "  gen-secret        - Generate a NextAuth secret and append to .env"
@@ -71,6 +82,47 @@ logs:
 	@echo "Following logs for service: $(SERVICE)..."
 	docker compose logs -f $(SERVICE)
 
+# --- Staging Deployment Targets ---
+setup-env:
+	@if [ ! -f .env ]; then \
+		echo "Creating .env from .env.development.local..."; \
+		cp .env.development.local .env; \
+		$(MAKE) gen-secret; \
+		echo "!!! IMPORTANT: Edit .env and change DATABASE_URL to localhost:5432 !!!"; \
+	else \
+		echo ".env already exists."; \
+	fi
+
+check-env:
+	@if [ ! -f $(ENV_FILE) ]; then \
+		echo "ERROR: $(ENV_FILE) not found. Run 'make setup-env' first."; \
+		exit 1; \
+	fi
+
+deploy-staging: check-env db-up migrate seed build-staging
+	@echo "--- Staging Deployment Complete ---"
+	@echo "Run 'pm2 restart aia-staging' if the app is already running."
+
+db-up:
+	@echo "--- Starting Database ---"
+	npm run db:up
+
+migrate:
+	@echo "--- Running Migrations ---"
+	/bin/bash -c "set -a; [ -f $(ENV_FILE) ] && source $(ENV_FILE); set +a && npm run db:migrate"
+
+seed:
+	@echo "--- Seeding Database (CORE Data) ---"
+	/bin/bash -c "set -a; [ -f $(ENV_FILE) ] && source $(ENV_FILE); set +a && npm run db:seed"
+
+seed-dev:
+	@echo "--- Seeding Database (DEV Mock Data) ---"
+	/bin/bash -c "set -a; [ -f $(ENV_FILE) ] && source $(ENV_FILE); set +a && npm run db:seed:dev"
+
+build-staging:
+	@echo "--- Building Next.js (Optimized for Pi 3B) ---"
+	/bin/bash -c "set -a; [ -f $(ENV_FILE) ] && source $(ENV_FILE); set +a && npm run build:staging"
+
 # --- Testing & Coverage Targets ---
 test:
 	@echo "Running tests for suite: $(SUITE)"
@@ -84,5 +136,5 @@ coverage:
 # --- Utility Targets ---
 gen-secret:
 	@echo "Generating NEXTAUTH_SECRET..."
-	@echo "NEXTAUTH_SECRET=\"$$(openssl rand -base64 32)\"" > .env
-	@echo "Secret written to .env"
+	@echo "NEXTAUTH_SECRET=\"$$(openssl rand -base64 32)\"" >> .env
+	@echo "Secret appended to .env"

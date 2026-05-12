@@ -1,6 +1,6 @@
 // lib/csvUtils.ts
 
-import { Prisma } from '@/lib/generated/prisma/client';
+import { Prisma } from '@/lib/generated/prisma';
 
 /**
  * Converts an array of objects into a CSV string.

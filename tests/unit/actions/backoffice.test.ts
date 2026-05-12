@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { revalidatePath } from 'next/cache';
 import * as financialService from '@/services/FinancialService';
-import { Prisma } from '@/lib/generated/prisma/client';
+import { Prisma } from '@/lib/generated/prisma';
 
 vi.mock('@/lib/db', () => ({
   prisma: {

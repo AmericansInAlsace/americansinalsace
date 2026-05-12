@@ -23,7 +23,7 @@ export async function exportUserData(userId: number) {
     throw new Error('Unauthorized');
   }
 
-  const currentUserId = parseInt(session.user.id);
+  const currentUserId = session.user.id;
   const isTargetingSelf = currentUserId === userId;
 
   if (!isTargetingSelf && !(await isAdmin(session))) {
@@ -75,7 +75,7 @@ export async function anonymizeUserData(userId: number) {
     throw new Error('Unauthorized');
   }
 
-  const currentUserId = parseInt(session.user.id);
+  const currentUserId = session.user.id;
   const isTargetingSelf = currentUserId === userId;
 
   if (!isTargetingSelf && !(await isAdmin(session))) {
