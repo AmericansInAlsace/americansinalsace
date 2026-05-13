@@ -28,12 +28,13 @@ function VerificationContent() {
   const searchParams = useSearchParams();
   const verified = searchParams.get('verified');
   const error = searchParams.get('error');
+  const t = useTranslations('HomePage');
 
   if (!verified && !error) return null;
 
   return (
     <div className={`py-3 px-4 text-center text-sm font-medium ${verified ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`} role="alert">
-      {verified ? 'Your email has been successfully verified! You can now log in.' : `Verification failed: ${error}`}
+      {verified ? t('verificationSuccess') : t('verificationError', { error })}
     </div>
   );
 }
@@ -100,14 +101,14 @@ export default function HomePageClient({ upcomingEventsSection }: HomePageClient
               <div className="grid gap-8">
                 <article className="bg-white p-8 rounded-xl border border-[var(--color-border)] shadow-sm hover:shadow-md transition-shadow">
                   <div className="text-xs font-bold text-[var(--color-primary-red)] uppercase tracking-widest mb-2">Announcement</div>
-                  <h3 className="text-2xl font-bold mb-4 font-serif">Welcome to our new community platform!</h3>
+                  <h3 className="text-2xl font-bold mb-4 font-serif">{t('welcomeTitle')}</h3>
                   <p className="text-[var(--color-text-muted)] leading-relaxed mb-6">
-                    We are thrilled to launch the new Americans in Alsace website. This platform will serve as our central hub for events, news, and member connections.
+                    {t('welcomeDescription')}
                   </p>
-                  <span className="text-sm font-semibold text-[var(--color-primary-blue)] hover:underline cursor-pointer">Read more &rarr;</span>
+                  <span className="text-sm font-semibold text-[var(--color-primary-blue)] hover:underline cursor-pointer">{t('readMore')} &rarr;</span>
                 </article>
                 <div className="bg-gray-50 p-12 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center">
-                  <p className="text-gray-400 italic">More news articles are coming soon...</p>
+                  <p className="text-gray-400 italic">{t('moreNews')}</p>
                 </div>
               </div>
             </section>

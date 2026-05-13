@@ -1,0 +1,46 @@
+# --- HTTP SERVER (Port 80) ---
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name americansinalsace.duckdns.org;
+
+    # Handle Certbot Challenge
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+        allow all;
+        try_files $uri =404;
+    }
+
+    # Redirect all other traffic to HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# --- TEMPORARY HTTPS SERVER (Port 443) ---
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name americansinalsace.duckdns.org;
+
+    # Using the temporary self-signed cert
+    # Ensure you ran the openssl command to create these!
+    ssl_certificate /etc/ssl/certs/temp-nginx.crt;
+    ssl_certificate_key /etc/ssl/private/temp-nginx.key;
+
+    # Handle Certbot Challenge (in case of redirect)
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+        allow all;
+        try_files $uri =404;
+    }
+
+    # Proxy to Next.js
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

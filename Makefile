@@ -28,11 +28,15 @@ endif
 
 # --- Phony Targets ---
 # Declare all targets as .PHONY to prevent conflicts with files of the same name.
-.PHONY: help build rebuild start stop shell logs test coverage gen-secret setup-env db-up migrate seed seed-dev build-staging deploy-staging check-env
+.PHONY: help build rebuild start stop shell logs test coverage gen-secret setup-env db-up migrate seed seed-dev build-staging deploy-staging check-env dev prod wait-db
 
 # --- Help Target ---
 help:
 	@echo "Usage: make [target] [VARIABLE=value]"
+	@echo ""
+	@echo "High-Level Setup:"
+	@echo "  dev               - Full development setup (env, deps, db, migrate, seed-dev, start)"
+	@echo "  prod              - Full production setup (env check, deps, db, migrate, seed, build, start)"
 	@echo ""
 	@echo "Docker Environment:"
 	@echo "  start             - Start all services in the background."
@@ -56,6 +60,36 @@ help:
 	@echo "Testing & Coverage:"
 	@echo "  test [SUITE=all]   - Run tests. SUITE can be 'unit', 'integration', 'ui', or 'all'."
 	@echo "  coverage [SUITE=all] - Run tests with coverage. Report is saved in a separate directory per suite."
+
+# --- High-Level Setup Targets ---
+dev: setup-env
+	@echo "--- Starting Development Setup ---"
+	npm install --legacy-peer-deps
+	$(MAKE) db-up
+	$(MAKE) wait-db
+	$(MAKE) migrate
+	$(MAKE) seed-dev
+	@echo "--- Development Setup Complete. Starting Server... ---"
+	npm run dev
+
+prod: check-env
+	@echo "--- Starting Production Setup ---"
+	npm install --legacy-peer-deps
+	$(MAKE) db-up
+	$(MAKE) wait-db
+	$(MAKE) migrate
+	$(MAKE) seed
+	npm run build
+	@echo "--- Production Setup Complete. Starting Server... ---"
+	npm run start
+
+wait-db:
+	@echo "Waiting for database to be ready..."
+	@until docker compose exec db pg_isready -U postgres -d app_db > /dev/null 2>&1; do \
+		echo "Database is not ready yet. Retrying in 2 seconds..."; \
+		sleep 2; \
+	done
+	@echo "Database is ready!"
 
 # --- Docker Targets ---
 build:

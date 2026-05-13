@@ -4,25 +4,7 @@ import { GET as verifyEmail } from '@/app/api/auth/verify/route';
 import { prisma } from '@/lib/db';
 import { NextRequest } from 'next/server';
 import { MailService } from '@/services/MailService';
-
-vi.mock('@/lib/db', () => ({
-  prisma: {
-    user: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-    },
-    role: {
-      findUnique: vi.fn(),
-    },
-    emailTemplate: {
-      findUnique: vi.fn(),
-    },
-    emailLog: {
-      create: vi.fn(),
-    },
-  },
-}));
+import { IntegrationTestHelper } from './IntegrationTestHelper';
 
 vi.mock('@/services/MailService', () => ({
   MailService: {
@@ -32,8 +14,10 @@ vi.mock('@/services/MailService', () => ({
 }));
 
 describe('Integration: Authentication Flow', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    await IntegrationTestHelper.clearDatabase();
+    await IntegrationTestHelper.seedBasicData();
   });
 
   it('should complete the full registration and verification flow', async () => {
@@ -44,53 +28,44 @@ describe('Integration: Authentication Flow', () => {
     formData.append('email', 'test@example.com');
     formData.append('password', 'password123');
 
-    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce(null); // No existing user
-    vi.mocked(prisma.role.findUnique).mockResolvedValue({ id: 1, name: 'BASIC_USER' } as any);
-    vi.mocked(prisma.user.create).mockResolvedValue({
-      id: 1,
-      email: 'test@example.com',
-      verificationToken: 'token123',
-    } as any);
-
     const regResult = await handleRegister(formData);
     expect(regResult.success).toBe(true);
-    expect(prisma.user.create).toHaveBeenCalled();
-    expect(MailService.sendVerificationEmail).toHaveBeenCalledWith('test@example.com', expect.any(String));
+
+    // Verify user created in DB
+    const user = await prisma.user.findUnique({ where: { email: 'test@example.com' } });
+    expect(user).toBeDefined();
+    expect(user?.verificationToken).toBeDefined();
+    expect(MailService.sendVerificationEmail).toHaveBeenCalledWith('test@example.com', user?.verificationToken);
 
     // 2. Email Verification API
-    const request = new NextRequest('http://localhost/api/auth/verify?token=token123');
-    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
-      id: 1,
-      verificationToken: 'token123',
-      tokenExpires: new Date(Date.now() + 10000),
-    } as any);
-
+    const request = new NextRequest(`http://localhost/api/auth/verify?token=${user?.verificationToken}`);
     const verifyResponse = await verifyEmail(request);
+    
     expect(verifyResponse.status).toBe(307); // Redirect
     expect(verifyResponse.headers.get('location')).toContain('verified=true');
-    expect(prisma.user.update).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: 1 },
-      data: expect.objectContaining({ emailVerified: expect.any(Date) }),
-    }));
 
-    // 3. Login Action (preparation)
+    // Verify emailVerified in DB
+    const verifiedUser = await prisma.user.findUnique({ where: { id: user?.id } });
+    expect(verifiedUser?.emailVerified).toBeDefined();
+    expect(verifiedUser?.emailVerified).not.toBeNull();
+
+    // 3. Login Action
     const loginFormData = new FormData();
     loginFormData.append('email', 'test@example.com');
     loginFormData.append('password', 'password123');
 
     const loginResult = await handleLogin(loginFormData);
     expect(loginResult.email).toBe('test@example.com');
-    expect(loginResult.password).toBe('password123');
   });
 
   it('should fail registration if user already exists', async () => {
+    await IntegrationTestHelper.seedTestUser(1, 'exists@example.com');
+
     const formData = new FormData();
     formData.append('firstName', 'Test');
     formData.append('lastName', 'User');
     formData.append('email', 'exists@example.com');
     formData.append('password', 'password123');
-
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: 1 } as any);
 
     const result = await handleRegister(formData);
     expect(result.error).toBe('User already exists');
@@ -98,8 +73,6 @@ describe('Integration: Authentication Flow', () => {
 
   it('should fail verification with invalid token', async () => {
     const request = new NextRequest('http://localhost/api/auth/verify?token=invalid');
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-
     const response = await verifyEmail(request);
     expect(response.headers.get('location')).toContain('error=Invalid');
   });
@@ -111,3 +84,4 @@ describe('Integration: Authentication Flow', () => {
     expect(response.headers.get('location')).toContain('error=Missing%20token');
   });
 });
+

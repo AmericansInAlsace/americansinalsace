@@ -106,8 +106,9 @@ export default function EventFormModal({ isOpen, onClose, event, categories }: E
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label className="block text-sm font-bold text-gray-700 mb-2">Event Title</label>
+              <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">Event Title</label>
               <input
+                id="title"
                 type="text"
                 name="title"
                 value={formData.title}
@@ -129,8 +130,9 @@ export default function EventFormModal({ isOpen, onClose, event, categories }: E
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Location</label>
+              <label htmlFor="location" className="block text-sm font-bold text-gray-700 mb-2">Location</label>
               <input
+                id="location"
                 type="text"
                 name="location"
                 value={formData.location}
@@ -142,8 +144,9 @@ export default function EventFormModal({ isOpen, onClose, event, categories }: E
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Date & Time</label>
+              <label htmlFor="date" className="block text-sm font-bold text-gray-700 mb-2">Date & Time</label>
               <input
+                id="date"
                 type="datetime-local"
                 name="date"
                 value={formData.date}
@@ -154,8 +157,9 @@ export default function EventFormModal({ isOpen, onClose, event, categories }: E
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+              <label htmlFor="categoryId" className="block text-sm font-bold text-gray-700 mb-2">Category</label>
               <select
+                id="categoryId"
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleChange}
@@ -170,8 +174,9 @@ export default function EventFormModal({ isOpen, onClose, event, categories }: E
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Registration Limit (Capacity)</label>
+              <label htmlFor="capacity" className="block text-sm font-bold text-gray-700 mb-2">Registration Limit (Capacity)</label>
               <input
+                id="capacity"
                 type="number"
                 name="capacity"
                 value={formData.capacity}
@@ -182,8 +187,9 @@ export default function EventFormModal({ isOpen, onClose, event, categories }: E
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Member Price</label>
+              <label htmlFor="memberPrice" className="block text-sm font-bold text-gray-700 mb-2">Member Price</label>
               <input
+                id="memberPrice"
                 type="number"
                 step="0.01"
                 name="memberPrice"
@@ -195,8 +201,9 @@ export default function EventFormModal({ isOpen, onClose, event, categories }: E
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Non-Member Price</label>
+              <label htmlFor="nonMemberPrice" className="block text-sm font-bold text-gray-700 mb-2">Non-Member Price</label>
               <input
+                id="nonMemberPrice"
                 type="number"
                 step="0.01"
                 name="nonMemberPrice"

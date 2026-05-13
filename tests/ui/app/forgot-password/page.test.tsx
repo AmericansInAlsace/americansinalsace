@@ -1,29 +1,25 @@
 import { render, screen } from '@testing-library/react';
 import ForgotPasswordPage from '@/app/[locale]/forgot-password/page';
-import { describe, it, expect, vi } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 
-// Mock next-intl/server
+vi.mock('@/components/features/auth/ForgotPasswordForm', () => ({
+  ForgotPasswordForm: () => <div data-testid="forgot-password-form" />,
+}));
+vi.mock('@/i18n/routing', () => ({
+  Link: ({ children, href }: any) => <a href={href}>{children}</a>,
+}));
 vi.mock('next-intl/server', () => ({
   setRequestLocale: vi.fn(),
 }));
 
-// Mock ForgotPasswordForm
-vi.mock('@/components/features/auth/ForgotPasswordForm', () => ({
-  ForgotPasswordForm: () => <div data-testid="forgot-password-form">ForgotPasswordForm</div>,
-}));
-
-// Mock i18n routing
-vi.mock('@/i18n/routing', () => ({
-  Link: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a>,
-}));
-
 describe('ForgotPasswordPage', () => {
-  it('should render the forgot password page', async () => {
-    const params = { locale: 'en' };
+  it('renders correctly', async () => {
+    const params = Promise.resolve({ locale: 'en' });
     const Result = await ForgotPasswordPage({ params });
     render(Result);
 
     expect(screen.getByText('Reset Your Password')).toBeInTheDocument();
+    expect(screen.getByText('Go back to login')).toBeInTheDocument();
     expect(screen.getByTestId('forgot-password-form')).toBeInTheDocument();
   });
 });

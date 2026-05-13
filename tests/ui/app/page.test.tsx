@@ -46,8 +46,8 @@ describe('HomePage', () => {
     const Page = await HomePage();
     render(Page);
 
-    expect(screen.getByText(/title/i)).toBeInTheDocument();
-    expect(screen.getByText(/description/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /title/i })).toBeInTheDocument();
+    expect(screen.getByText('description')).toBeInTheDocument();
     expect(screen.getByText(/Why Join Us\?/i)).toBeInTheDocument();
   });
 
@@ -60,6 +60,6 @@ describe('HomePage', () => {
     const Page = await HomePage();
     render(Page);
 
-    expect(screen.getByText(/Your email has been successfully verified/i)).toBeInTheDocument();
+    expect(screen.getByText('verificationSuccess')).toBeInTheDocument();
   });
 });

@@ -1,10 +1,12 @@
 import { prisma } from '@/lib/db';
 import { EventCard } from '@/components/ui/EventCard';
+import { getTranslations } from 'next-intl/server';
 
 /**
  * Public Events Listing Page.
  */
 export default async function EventsPage() {
+  const t = await getTranslations('Events');
   const events = await prisma.event.findMany({
     where: { published: true },
     include: {
@@ -21,10 +23,10 @@ export default async function EventsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-[var(--color-text-main)] font-serif mb-4">
-            Community Events
+            {t('title')}
           </h1>
           <p className="text-xl text-[var(--color-text-muted)] max-w-2xl mx-auto">
-            Join us for social meetups, cultural tours, and annual celebrations.
+            {t('description')}
           </p>
         </div>
 
@@ -35,8 +37,8 @@ export default async function EventsPage() {
 
           {events.length === 0 && (
             <div className="col-span-full py-20 text-center bg-white rounded-2xl border-2 border-dashed border-gray-200">
-              <p className="text-xl text-gray-400 italic font-serif">No upcoming events scheduled at the moment.</p>
-              <p className="text-sm text-gray-400 mt-2">Check back soon for new activities!</p>
+              <p className="text-xl text-gray-400 italic font-serif">{t('noEvents')}</p>
+              <p className="text-sm text-gray-400 mt-2">{t('checkBackSoon')}</p>
             </div>
           )}
         </div>

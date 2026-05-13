@@ -158,6 +158,9 @@ export async function recordManualPayment(transactionData: Omit<Transaction, 'id
 
   try {
     const roundedAmount = Math.round(parseFloat(amount.toString()) * 100) / 100;
+    if (isNaN(roundedAmount)) {
+      throw new Error('Invalid amount for manual payment.');
+    }
     const newTransaction = await prisma.transaction.create({
       data: {
         userId: userId,

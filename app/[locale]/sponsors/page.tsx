@@ -1,17 +1,14 @@
 import React from 'react';
 import { SponsorshipService } from '@/services/SponsorshipService';
 import Image from 'next/image';
-
-export const metadata = {
-  title: 'Our Sponsors | Americans in Alsace',
-  description: 'Meet the generous sponsors who support the Americans in Alsace community.',
-};
+import { getTranslations } from 'next-intl/server';
 
 /**
  * Public Sponsors Page.
  * Displays all active sponsors, ordered by their tier priority.
  */
 export default async function SponsorsPage() {
+  const t = await getTranslations('Sponsors');
   const sponsors = await SponsorshipService.getAllActiveSponsors();
 
   return (
@@ -20,10 +17,12 @@ export default async function SponsorsPage() {
       <section className="bg-[#3C3B6E] text-white py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold font-serif mb-6 leading-tight">
-            Our Generous <span className="text-[#E30613]">Sponsors</span>
+            {t.rich('title', {
+              span: (chunks) => <span className="text-[#E30613]">{chunks}</span>
+            })}
           </h1>
           <p className="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">
-            We are deeply grateful for the support of these organizations. Their contributions help us maintain and grow the Americans in Alsace community.
+            {t('description')}
           </p>
         </div>
       </section>
@@ -33,7 +32,7 @@ export default async function SponsorsPage() {
         <div className="max-w-7xl mx-auto">
           {sponsors.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-gray-500 text-lg">We currently have no active sponsors. Be the first to support our community!</p>
+              <p className="text-gray-500 text-lg">{t('noSponsors')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -63,7 +62,7 @@ export default async function SponsorsPage() {
                           {sponsor.companyName}
                         </h3>
                         <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700">
-                          {sponsor.tierName} Sponsor
+                          {t('sponsorBadge', { tier: sponsor.tierName })}
                         </span>
                       </div>
                     </div>
@@ -82,7 +81,7 @@ export default async function SponsorsPage() {
                           rel="noopener noreferrer"
                           className="text-[#E30613] font-bold text-sm hover:underline flex items-center gap-1"
                         >
-                          Visit Website <span aria-hidden="true">&rarr;</span>
+                          {t('visitWebsite')} <span aria-hidden="true">&rarr;</span>
                         </a>
                       </div>
                     )}

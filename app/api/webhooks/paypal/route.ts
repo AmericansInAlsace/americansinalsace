@@ -44,17 +44,7 @@ export async function POST(request: NextRequest) {
         const endDate = new Date(startDate);
         endDate.setFullYear(endDate.getFullYear() + 1);
 
-        // Upsert the subscription first
-        await MembershipService.upsertSubscription({
-          userId,
-          tierId,
-          status: 'ACTIVE',
-          paypalSubscriptionId,
-          startDate,
-          endDate,
-        });
-
-        // Now, create a corresponding transaction record
+        // Check if the membership tier exists first
         const membershipTier = await prisma.membershipTier.findUnique({
           where: { id: tierId },
           select: { price: true, name: true },
@@ -64,6 +54,16 @@ export async function POST(request: NextRequest) {
           console.error(`Membership tier not found for tierId: ${tierId}`);
           return NextResponse.json({ error: 'Membership tier not found' }, { status: 404 });
         }
+
+        // Upsert the subscription
+        await MembershipService.upsertSubscription({
+          userId,
+          tierId,
+          status: 'ACTIVE',
+          paypalSubscriptionId,
+          startDate,
+          endDate,
+        });
         
         // Use FinancialService to record the transaction
         await recordManualPayment({

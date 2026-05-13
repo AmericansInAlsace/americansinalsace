@@ -5,7 +5,31 @@
     "upcomingEvents": "Upcoming Events",
     "viewAllEvents": "View All Events",
     "noEvents": "Stay tuned for our upcoming celebrations! Details will be posted here soon.",
-    "latestNews": "Latest News"
+    "latestNews": "Latest News",
+    "welcomeTitle": "Welcome to our new community platform!",
+    "welcomeDescription": "We are thrilled to launch the new Americans in Alsace website. This platform will serve as our central hub for events, news, and member connections.",
+    "readMore": "Read more",
+    "moreNews": "More news articles are coming soon...",
+    "whyJoinTitle": "Why Join Us?",
+    "whyJoinPoint1": "Connect with fellow North Americans in Alsace.",
+    "whyJoinPoint2": "Access exclusive member events and resources.",
+    "whyJoinPoint3": "Support the local expat community.",
+    "joinToday": "Join Today",
+    "contactTitle": "Contact Us",
+    "contactDescription": "Have questions or want to get involved? Reach out to us at {email}.",
+    "bugReportTitle": "Found a Bug?",
+    "bugReportDescription": "Help us keep our community platform running smoothly. If you spot a technical issue, report it directly to our dev team.",
+    "reportIssue": "Report Issue",
+    "footerDescription": "A bridge between North America and the Grand Est. Supporting our community since 2026.",
+    "quickLinks": "Quick Links",
+    "legalTitle": "Legal & Accessibility",
+    "accessibilityStatement": "Accessibility Statement",
+    "privacyPolicy": "Privacy Policy",
+    "legalMentions": "Legal Mentions",
+    "allRightsReserved": "© {year} Americans in Alsace. All rights reserved.",
+    "accessibilityCompliance": "Accessibility: Partially Compliant",
+    "verificationSuccess": "Your email has been successfully verified! You can now log in.",
+    "verificationError": "Verification failed: {error}"
   },
   "Navbar": {
     "home": "Home",
@@ -14,7 +38,9 @@
     "profile": "Profile",
     "login": "Login",
     "register": "Register",
-    "logout": "Logout"
+    "logout": "Logout",
+    "backoffice": "Backoffice",
+    "backofficeDashboard": "Backoffice Dashboard"
   },
   "Auth": {
     "login": "Login",
@@ -25,5 +51,18 @@
     "resetPassword": "Reset Password",
     "alreadyHaveAccount": "Already have an account? Login",
     "dontHaveAccount": "Don't have an account? Register"
+  },
+  "Events": {
+    "title": "Community Events",
+    "description": "Join us for social meetups, cultural tours, and annual celebrations.",
+    "noEvents": "No upcoming events scheduled at the moment.",
+    "checkBackSoon": "Check back soon for new activities!"
+  },
+  "Sponsors": {
+    "title": "Our Generous <span>Sponsors</span>",
+    "description": "We are deeply grateful for the support of these organizations. Their contributions help us maintain and grow the Americans in Alsace community.",
+    "noSponsors": "We currently have no active sponsors. Be the first to support our community!",
+    "visitWebsite": "Visit Website",
+    "sponsorBadge": "{tier} Sponsor"
   }
 }

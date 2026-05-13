@@ -4,6 +4,14 @@ import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 
 // Mock dynamic import
+const mockQuillEditor = {
+  getEditor: vi.fn().mockReturnValue({
+    getSelection: vi.fn().mockReturnValue({ index: 0 }),
+    insertText: vi.fn(),
+    setSelection: vi.fn(),
+  }),
+};
+
 vi.mock('next/dynamic', () => ({
   default: (fn: any, options: any) => {
     return function MockedComponent(props: any) {
@@ -11,7 +19,22 @@ vi.mock('next/dynamic', () => ({
         const LoadingComponent = options.loading;
         return <LoadingComponent />;
       }
-      return <div data-testid="mock-quill"><textarea value={props.value} onChange={(e) => props.onChange(e.target.value)} /></div>;
+      
+      // Assign the mock editor to the forwardedRef if it exists
+      React.useEffect(() => {
+        if (props.forwardedRef) {
+          props.forwardedRef.current = mockQuillEditor;
+        }
+      }, [props.forwardedRef]);
+
+      return (
+        <div data-testid="mock-quill">
+          <textarea 
+            value={props.value} 
+            onChange={(e) => props.onChange(e.target.value)} 
+          />
+        </div>
+      );
     };
   },
 }));
@@ -42,5 +65,17 @@ describe('EmailEditor', () => {
     
     expect(screen.getByText('{{userName}}')).toBeInTheDocument();
     expect(screen.getByText('{{actionUrl}}')).toBeInTheDocument();
+  });
+
+  it('should insert placeholder into editor when clicked', () => {
+    const placeholders = ['userName'];
+    render(<EmailEditor value="" onChange={() => {}} availablePlaceholders={placeholders} __test_loading={false} />);
+    
+    const button = screen.getByText('{{userName}}');
+    fireEvent.click(button);
+
+    const editor = mockQuillEditor.getEditor();
+    expect(editor.insertText).toHaveBeenCalledWith(0, '{{userName}}');
+    expect(editor.setSelection).toHaveBeenCalledWith(0 + 'userName'.length + 4);
   });
 });

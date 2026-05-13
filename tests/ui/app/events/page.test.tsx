@@ -17,6 +17,11 @@ vi.mock('next/link', () => ({
   default: ({ children, href }: any) => <a href={href}>{children}</a>,
 }));
 
+// Mock next-intl/server
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn().mockResolvedValue((key: string) => key),
+}));
+
 describe('EventsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -43,7 +48,7 @@ describe('EventsPage', () => {
     const Result = await EventsPage();
     render(Result);
 
-    expect(screen.getByText('Community Events')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'title' })).toBeInTheDocument();
     expect(screen.getByText('Summer BBQ')).toBeInTheDocument();
     expect(screen.getByText('Social')).toBeInTheDocument();
     expect(screen.getByText('04 Jul 2026')).toBeInTheDocument();
@@ -57,6 +62,6 @@ describe('EventsPage', () => {
     const Result = await EventsPage();
     render(Result);
 
-    expect(screen.getByText(/No upcoming events scheduled/i)).toBeInTheDocument();
+    expect(screen.getByText('noEvents')).toBeInTheDocument();
   });
 });

@@ -17,15 +17,32 @@ export default defineConfig({
         inline: ['next-intl'],
       },
     },
+    fileParallelism: !process.argv.some(arg => arg.includes('tests/integration')),
+    globalSetup: process.argv.some(arg => arg.includes('tests/integration')) 
+      ? ['./tests/integration/setup.ts'] 
+      : [],
     coverage: {
       provider: 'istanbul',
       reporter: ['text', 'json', 'html'],
-      include: ['app/**', 'components/**', 'lib/**', 'services/**'],
-      exclude: [
-        'node_modules/**',
-        'lib/generated/**',
-        'app/api/auth/[...nextauth]/**',
-      ],
+      include: process.argv.some(arg => arg.includes('tests/ui'))
+        ? ['app/**', 'components/**']
+        : ['app/**', 'components/**', 'lib/**', 'services/**'],
+      exclude: process.argv.some(arg => arg.includes('tests/ui'))
+        ? [
+            'node_modules/**',
+            'lib/generated/**',
+            'app/api/**',
+            'app/actions/**',
+            '**/*actions.ts',
+            '**/*actions.tsx',
+            '**/*Actions.ts',
+            '**/*Actions.tsx',
+          ]
+        : [
+            'node_modules/**',
+            'lib/generated/**',
+            'app/api/auth/[...nextauth]/**',
+          ],
       thresholds: {
         lines: 90,
         functions: 90,

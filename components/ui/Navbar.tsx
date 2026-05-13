@@ -85,7 +85,7 @@ export function Navbar() {
                       href="/backoffice" 
                       className="text-sm font-bold text-[var(--color-primary-blue)] hover:text-[var(--color-primary-red)] transition-colors py-2 px-4 border border-blue-100 rounded-full bg-blue-50 shadow-sm"
                     >
-                      Backoffice
+                      {t('backoffice')}
                     </Link>
                   )}
                   <Link 
@@ -188,7 +188,7 @@ export function Navbar() {
                   </Link>
                   {hasBackofficeAccess && (
                     <Link href="/backoffice" onClick={toggleMenu} className={`${mobileLinkClass} text-[var(--color-primary-blue)]`}>
-                      Backoffice Dashboard <span>🛠️</span>
+                      {t('backofficeDashboard')} <span>🛠️</span>
                     </Link>
                   )}
                 </>

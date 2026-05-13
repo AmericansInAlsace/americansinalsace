@@ -2,44 +2,24 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { POST } from '@/app/api/webhooks/paypal/route';
-import { MembershipService } from '@/services/MembershipService';
 import { PayPalService } from '@/services/PayPalService';
-import * as FinancialService from '@/services/FinancialService';
-import { prisma } from '@/lib/db'; // Mock prisma for direct DB interactions
+import { prisma } from '@/lib/db';
 import { NextRequest } from 'next/server';
-import { Prisma } from '@/lib/generated/prisma';
+import { IntegrationTestHelper } from './IntegrationTestHelper';
 
-// Mock all services and prisma client used by the webhook handler
-vi.mock('@/services/MembershipService');
+// Mock only external PayPalService
 vi.mock('@/services/PayPalService');
-vi.mock('@/services/FinancialService');
-vi.mock('@/lib/db', () => ({
-  prisma: {
-    membershipTier: {
-      findUnique: vi.fn(),
-    },
-    subscription: {
-      updateMany: vi.fn(),
-    },
-    transaction: {
-      create: vi.fn(),
-    },
-  },
-}));
 
-// Cast mocks to their correct types for easier access to mock functions
-const mockedMembershipService = MembershipService as vi.Mocked<typeof MembershipService>;
 const mockedPayPalService = PayPalService as vi.Mocked<typeof PayPalService>;
-const mockedFinancialService = FinancialService as vi.Mocked<typeof FinancialService>;
-const mockedPrisma = prisma as vi.Mocked<PrismaClient>;
 
 describe('Integration: PayPal Webhook Handler', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    // Resetting prisma mocks as well if they are granular
-    mockedPrisma.membershipTier.findUnique.mockReset();
-    mockedPrisma.subscription.updateMany.mockReset();
-    mockedPrisma.transaction.create.mockReset(); // Mocking create for FinancialService test if it uses prisma directly
+    await IntegrationTestHelper.clearDatabase();
+    await IntegrationTestHelper.seedBasicData();
+    // Seed test users
+    await IntegrationTestHelper.seedTestUser(1, 'user1@example.com');
+    await IntegrationTestHelper.seedTestUser(3, 'user3@example.com');
   });
 
   // Helper to create a mock NextRequest
@@ -57,27 +37,13 @@ describe('Integration: PayPal Webhook Handler', () => {
       event_type: 'BILLING.SUBSCRIPTION.ACTIVATED',
       resource: {
         id: 'SUB_ID_123',
-        custom_id: '1|2',
+        custom_id: '1|2', // User 1, Tier 2
         start_time: '2026-05-09T10:00:00Z',
       },
     };
     const mockRequest = createMockRequest(mockPayload, { 'paypal-signature': 'valid-signature' });
 
     mockedPayPalService.verifyWebhookSignature.mockResolvedValue(true);
-    mockedMembershipService.upsertSubscription.mockResolvedValue(undefined);
-    mockedPrisma.membershipTier.findUnique.mockResolvedValue({
-      id: 2,
-      name: 'Premium Monthly',
-      price: new Prisma.Decimal('19.99'),
-      currency: 'USD',
-      paypalPlanId: 'PLAN_ABC',
-      active: true,
-    });
-    mockedFinancialService.recordManualPayment.mockResolvedValue({ // Mocking recordManualPayment as it's used
-      id: 101, userId: 1, amount: new Prisma.Decimal('19.99'), currency: 'USD', type: 'SUBSCRIPTION_PAYMENT', status: 'SUCCESS',
-      transactionDate: new Date('2026-05-09T10:00:00Z'), createdAt: new Date(), updatedAt: new Date(),
-      paypalTransactionId: null, description: 'Subscription payment for Premium Monthly'
-    });
 
     const response = await POST(mockRequest);
     const data = await response.json();
@@ -85,28 +51,23 @@ describe('Integration: PayPal Webhook Handler', () => {
     expect(response.status).toBe(200);
     expect(data.received).toBe(true);
 
-    expect(mockedPayPalService.verifyWebhookSignature).toHaveBeenCalled();
-    expect(mockedMembershipService.upsertSubscription).toHaveBeenCalledWith(expect.objectContaining({
-      userId: 1,
-      tierId: 2,
-      status: 'ACTIVE',
-      paypalSubscriptionId: 'SUB_ID_123',
-      startDate: expect.any(Date),
-      endDate: expect.any(Date),
-    }));
-    expect(mockedPrisma.membershipTier.findUnique).toHaveBeenCalledWith({
-      where: { id: 2 },
-      select: { price: true, name: true },
+    // Verify DB state for Subscription
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId: 1 },
     });
-    expect(mockedFinancialService.recordManualPayment).toHaveBeenCalledWith(expect.objectContaining({
-      userId: 1,
-      amount: new Prisma.Decimal('19.99'),
-      currency: 'USD',
-      type: 'SUBSCRIPTION_PAYMENT',
-      status: 'SUCCESS',
-      description: 'Subscription payment for Premium Monthly',
-      transactionDate: expect.any(Date),
-    }));
+    expect(subscription).toBeDefined();
+    expect(subscription?.status).toBe('ACTIVE');
+    expect(subscription?.tierId).toBe(2);
+    expect(subscription?.paypalSubscriptionId).toBe('SUB_ID_123');
+
+    // Verify DB state for Transaction
+    const transaction = await prisma.transaction.findFirst({
+      where: { userId: 1, type: 'SUBSCRIPTION_PAYMENT' },
+    });
+    expect(transaction).toBeDefined();
+    expect(transaction?.amount.toString()).toBe('19.99');
+    expect(transaction?.currency).toBe('EUR');
+    expect(transaction?.status).toBe('SUCCESS');
   });
 
   it('should process BILLING.SUBSCRIPTION.RENEWED and create transaction', async () => {
@@ -114,39 +75,41 @@ describe('Integration: PayPal Webhook Handler', () => {
       event_type: 'BILLING.SUBSCRIPTION.RENEWED',
       resource: {
         id: 'SUB_ID_456',
-        custom_id: '3|4',
+        custom_id: '3|1', // User 3, Tier 1 (Basic)
         start_time: '2026-05-10T11:00:00Z',
       },
     };
     const mockRequest = createMockRequest(mockPayload, { 'paypal-signature': 'valid-signature' });
 
     mockedPayPalService.verifyWebhookSignature.mockResolvedValue(true);
-    mockedMembershipService.upsertSubscription.mockResolvedValue(undefined);
-    mockedPrisma.membershipTier.findUnique.mockResolvedValue({
-      id: 4,
-      name: 'Pro Annual',
-      price: new Prisma.Decimal('199.99'),
-      currency: 'USD',
-      paypalPlanId: 'PLAN_XYZ',
-      active: true,
-    });
-    mockedFinancialService.recordManualPayment.mockResolvedValue({
-      id: 102, userId: 3, amount: new Prisma.Decimal('199.99'), currency: 'USD', type: 'SUBSCRIPTION_PAYMENT', status: 'SUCCESS',
-      transactionDate: new Date('2026-05-10T11:00:00Z'), createdAt: new Date(), updatedAt: new Date(),
-      paypalTransactionId: null, description: 'Subscription payment for Pro Annual'
-    });
 
     const response = await POST(mockRequest);
     const data = await response.json();
 
     expect(response.status).toBe(200);
     expect(data.received).toBe(true);
-    expect(mockedMembershipService.upsertSubscription).toHaveBeenCalledWith(expect.objectContaining({ userId: 3, tierId: 4, paypalSubscriptionId: 'SUB_ID_456' }));
-    expect(mockedPrisma.membershipTier.findUnique).toHaveBeenCalledWith({ where: { id: 4 }, select: { price: true, name: true } });
-    expect(mockedFinancialService.recordManualPayment).toHaveBeenCalledWith(expect.objectContaining({ userId: 3, amount: new Prisma.Decimal('199.99'), description: 'Subscription payment for Pro Annual' }));
+
+    // Verify DB state
+    const subscription = await prisma.subscription.findUnique({ where: { userId: 3 } });
+    expect(subscription?.tierId).toBe(1);
+
+    const transaction = await prisma.transaction.findFirst({
+      where: { userId: 3, type: 'SUBSCRIPTION_PAYMENT' },
+    });
+    expect(transaction?.amount.toString()).toBe('20');
   });
 
   it('should update subscription status for CANCELLED event', async () => {
+    // Setup existing subscription
+    await prisma.subscription.create({
+      data: {
+        userId: 1,
+        tierId: 2,
+        status: 'ACTIVE',
+        paypalSubscriptionId: 'SUB_ID_789',
+      },
+    });
+
     const mockPayload = {
       event_type: 'BILLING.SUBSCRIPTION.CANCELLED',
       resource: { id: 'SUB_ID_789' },
@@ -160,16 +123,25 @@ describe('Integration: PayPal Webhook Handler', () => {
 
     expect(response.status).toBe(200);
     expect(data.received).toBe(true);
-    expect(mockedPrisma.subscription.updateMany).toHaveBeenCalledWith({
-      where: { paypalSubscriptionId: 'SUB_ID_789' },
-      data: { status: 'INACTIVE' },
-    });
+
+    const subscription = await prisma.subscription.findUnique({ where: { userId: 1 } });
+    expect(subscription?.status).toBe('INACTIVE');
   });
 
   it('should update subscription status for EXPIRED event', async () => {
+    // Setup existing subscription
+    await prisma.subscription.create({
+      data: {
+        userId: 1,
+        tierId: 2,
+        status: 'ACTIVE',
+        paypalSubscriptionId: 'SUB_ID_EXP',
+      },
+    });
+
     const mockPayload = {
       event_type: 'BILLING.SUBSCRIPTION.EXPIRED',
-      resource: { id: 'SUB_ID_789' },
+      resource: { id: 'SUB_ID_EXP' },
     };
     const mockRequest = createMockRequest(mockPayload, { 'paypal-signature': 'valid-signature' });
 
@@ -180,10 +152,9 @@ describe('Integration: PayPal Webhook Handler', () => {
 
     expect(response.status).toBe(200);
     expect(data.received).toBe(true);
-    expect(mockedPrisma.subscription.updateMany).toHaveBeenCalledWith({
-      where: { paypalSubscriptionId: 'SUB_ID_789' },
-      data: { status: 'INACTIVE' },
-    });
+
+    const subscription = await prisma.subscription.findUnique({ where: { userId: 1 } });
+    expect(subscription?.status).toBe('INACTIVE');
   });
 
   it('should ignore unhandled event types', async () => {
@@ -194,10 +165,9 @@ describe('Integration: PayPal Webhook Handler', () => {
 
     const response = await POST(mockRequest);
     expect(response.status).toBe(200);
-    expect(mockedMembershipService.upsertSubscription).not.toHaveBeenCalled();
-    expect(mockedPrisma.membershipTier.findUnique).not.toHaveBeenCalled();
-    expect(mockedFinancialService.recordManualPayment).not.toHaveBeenCalled();
-    expect(mockedPrisma.subscription.updateMany).not.toHaveBeenCalled();
+
+    const subCount = await prisma.subscription.count();
+    expect(subCount).toBe(0);
   });
 
   it('should return 401 if signature verification fails', async () => {
@@ -210,10 +180,9 @@ describe('Integration: PayPal Webhook Handler', () => {
     expect(response.status).toBe(401);
     const data = await response.json();
     expect(data.error).toBe('Invalid signature');
-    expect(mockedMembershipService.upsertSubscription).not.toHaveBeenCalled();
   });
 
-  it('should return 500 if membership tier is not found', async () => {
+  it('should return 404 if membership tier is not found', async () => {
     const mockPayload = {
       event_type: 'BILLING.SUBSCRIPTION.ACTIVATED',
       resource: {
@@ -225,35 +194,25 @@ describe('Integration: PayPal Webhook Handler', () => {
     const mockRequest = createMockRequest(mockPayload, { 'paypal-signature': 'valid-signature' });
 
     mockedPayPalService.verifyWebhookSignature.mockResolvedValue(true);
-    mockedMembershipService.upsertSubscription.mockResolvedValue(undefined);
-    mockedPrisma.membershipTier.findUnique.mockResolvedValue(null); // Tier not found
 
     const response = await POST(mockRequest);
     expect(response.status).toBe(404);
     const data = await response.json();
     expect(data.error).toBe('Membership tier not found');
-
-    expect(mockedPrisma.membershipTier.findUnique).toHaveBeenCalledWith({ where: { id: 999 }, select: { price: true, name: true } });
-    expect(mockedFinancialService.recordManualPayment).not.toHaveBeenCalled(); // Transaction should not be created
   });
 
-  it('should return 500 if recordManualPayment fails', async () => {
+  it('should return 500 if DB operation fails (e.g. invalid custom_id format)', async () => {
     const mockPayload = {
       event_type: 'BILLING.SUBSCRIPTION.ACTIVATED',
       resource: {
         id: 'SUB_ID_123',
-        custom_id: '1|2',
+        custom_id: 'invalid', // Not "userId|tierId"
         start_time: '2026-05-09T10:00:00Z',
       },
     };
     const mockRequest = createMockRequest(mockPayload, { 'paypal-signature': 'valid-signature' });
 
     mockedPayPalService.verifyWebhookSignature.mockResolvedValue(true);
-    mockedMembershipService.upsertSubscription.mockResolvedValue(undefined);
-    mockedPrisma.membershipTier.findUnique.mockResolvedValue({
-      id: 2, name: 'Premium Monthly', price: new Prisma.Decimal('19.99'), paypalPlanId: 'PLAN_ABC', active: true,
-    } as any);
-    mockedFinancialService.recordManualPayment.mockRejectedValue(new Error('Financial Service Error')); // Simulate error
 
     const response = await POST(mockRequest);
     expect(response.status).toBe(500);

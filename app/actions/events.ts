@@ -36,7 +36,7 @@ export async function rsvpToEvent(eventId: number) {
   }
 
   // Check capacity if applicable
-  if (event.capacity) {
+  if (event.capacity !== null) {
     const currentRSVPs = await prisma.rSVP.count({
       where: { eventId, status: 'CONFIRMED' },
     });

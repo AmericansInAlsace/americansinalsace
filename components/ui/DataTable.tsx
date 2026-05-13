@@ -134,6 +134,7 @@ export function DataTable<T extends Record<string, any>>({
             <div key={filter.id} className="min-w-[120px]">
               {filter.type === 'select' ? (
                 <select
+                  aria-label={filter.label}
                   className="w-full h-10 px-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={filterValues[filter.id] || ''}
                   onChange={(e) => handleFilterChange(filter.id, e.target.value)}
@@ -147,6 +148,7 @@ export function DataTable<T extends Record<string, any>>({
                 </select>
               ) : (
                 <Input
+                  aria-label={filter.label}
                   placeholder={filter.label}
                   value={filterValues[filter.id] || ''}
                   onChange={(e) => handleFilterChange(filter.id, e.target.value)}
@@ -156,8 +158,10 @@ export function DataTable<T extends Record<string, any>>({
           ))}
 
           <div className="flex items-center gap-2 text-sm text-gray-500 ml-auto">
-            <span>Show:</span>
+            <label htmlFor="items-per-page" className="whitespace-nowrap">Show:</label>
             <select
+              id="items-per-page"
+              aria-label="Items per page"
               className="h-8 px-1 bg-transparent border-none focus:ring-0"
               value={itemsPerPage}
               onChange={(e) => {

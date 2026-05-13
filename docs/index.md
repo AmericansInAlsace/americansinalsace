@@ -1,32 +1,49 @@
 # Project Documentation Hub
 
-Welcome to the central documentation for the Americans in Alsace project. This hub provides an overview and links to essential project documents, focusing on functional specifications and key resources.
+Welcome to the central documentation for the Americans in Alsace project. This hub provides an overview and links to all project documents, specifically reorganized to support clean-room recreation.
 
-## Functional Specifications
+## Functional Specifications (Screen-by-Screen)
+High-fidelity blueprints describing the UI, business logic, and data flow of every view.
 
-### Front Office Features
-*   [Authentication & User Management](./functional_documents/frontoffice_specs.md#authentication--user-management)
-*   [Membership Management (Front Office)](./functional_documents/frontoffice_specs.md#membership-management-front-office)
-*   [Events Management (Front Office)](./functional_documents/frontoffice_specs.md#events-management-front-office)
-*   [Internationalization (i18n)](./functional_documents/frontoffice_specs.md#internationalization-i18n)
+### Frontoffice Screens
+*   [Home Page](./functional_documents/frontoffice/screens/home_page.md)
+*   [Auth Screens](./functional_documents/frontoffice/screens/auth_screens.md) (Login, Register, Password Reset)
+*   [Membership Selection](./functional_documents/frontoffice/screens/membership_selection.md)
+*   [Events Listing & Detail](./functional_documents/frontoffice/screens/events_screens.md)
+*   [Sponsor Listing](./functional_documents/frontoffice/screens/sponsor_listing.md)
+*   [User Profile](./functional_documents/frontoffice/screens/user_profile.md)
 
-### Back Office Features
-*   [Event Management](./functional_documents/backoffice_specs.md#event-management)
-*   [Membership Management](./functional_documents/backoffice_specs.md#membership-management)
-*   [User Role Management](./functional_documents/backoffice_specs.md#user-role-management)
-*   [Financial Management](./functional_documents/backoffice_specs.md#financial-management)
-*   [Communications Management](./functional_documents/backoffice_specs.md#communications-management)
+### Backoffice Screens
+*   [Admin Dashboard](./functional_documents/backoffice/screens/admin_dashboard.md)
+*   [User & Role Management](./functional_documents/backoffice/screens/user_role_management.md)
+*   [Membership & Sponsorship Admin](./functional_documents/backoffice/screens/membership_sponsor_admin.md)
+*   [Event Management Admin](./functional_documents/backoffice/screens/event_management_admin.md)
+*   [Financial Reports & Ledger](./functional_documents/backoffice/screens/financial_reports_ledger.md)
+*   [System & Communication Admin](./functional_documents/backoffice/screens/system_comm_admin.md)
+
+### Global & Cross-Cutting
+*   [Cross-Cutting Systems](./functional_documents/cross_cutting_systems.md) (Navbar, Footer, Bug Modal, Notifications)
+
+---
 
 ## Technical Documentation
-Core technical specifications and planning documents.
-*   [Architecture Design Document](./architecture-design-document.md)
-*   [Backlog](./technical_documents/backlog.md)
+Core technical specifications, design systems, and planning.
+
+### System Architecture
+*   [Architecture Design Document](./technical_documents/architecture-design-document.md)
+*   [Visual Identity & Design System](./technical_documents/visual_identity.md)
+*   [System Auth & RBAC (Legacy Reference)](./functional_documents/backoffice/auth_rbac.md)
+
+### Requirements & Planning
 *   [Product Requirements Document (PRD)](./technical_documents/product-requirements-document.md)
 *   [Software Requirements Specification (SRS)](./technical_documents/software-requirements-specification.md)
 *   [Technical Design Document (TDD)](./technical_documents/technical-design-document.md)
+*   [Project Backlog](./technical_documents/backlog.md)
 
-## Core Project Overview
-*   [README - Getting Started & Key Files](../README.md)
+### Implementation Plans
+*   [Screen-by-Screen Rewrite Plan](./impl/functional-spec-rewrite-plan.md)
 
 ---
-**Note:** The technical guides file (`/docs/technical_documents/tech_guides.md`) was not found and could not be linked.
+
+## Project Root
+*   [README - Getting Started & Development Setup](../README.md)

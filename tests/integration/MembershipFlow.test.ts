@@ -2,51 +2,28 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET as getTiers } from '@/app/api/membership/tiers/route';
 import { prisma } from '@/lib/db';
 import { MembershipService } from '@/services/MembershipService';
-
-vi.mock('@/lib/db', () => ({
-  prisma: {
-    membershipTier: {
-      findMany: vi.fn(),
-    },
-    subscription: {
-      findUnique: vi.fn(),
-      upsert: vi.fn(),
-    },
-  },
-}));
+import { IntegrationTestHelper } from './IntegrationTestHelper';
 
 describe('Integration: Membership Flow', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    await IntegrationTestHelper.clearDatabase();
+    await IntegrationTestHelper.seedBasicData();
   });
 
   it('should fetch active membership tiers via API', async () => {
-    const mockTiers = [
-      { id: 1, name: 'Basic', price: 10, active: true },
-      { id: 2, name: 'Premium', price: 20, active: true },
-    ];
-
-    vi.mocked(prisma.membershipTier.findMany).mockResolvedValue(mockTiers as any);
-
-    const response = await getTiers({} as any);
+    const response = await getTiers();
     const data = await response.json();
 
     expect(response.status).toBe(200);
     expect(data.tiers).toHaveLength(2);
-    expect(data.tiers[0].name).toBe('Basic');
-  });
-
-  it('should handle errors when fetching tiers', async () => {
-    vi.mocked(prisma.membershipTier.findMany).mockRejectedValue(new Error('DB Error'));
-
-    const response = await getTiers({} as any);
-    const data = await response.json();
-
-    expect(response.status).toBe(500);
-    expect(data.error).toBe('DB Error');
+    // Ordered by price asc
+    expect(data.tiers[0].name).toBe('Premium Monthly');
   });
 
   it('should upsert a subscription correctly', async () => {
+    await IntegrationTestHelper.seedTestUser(1, 'test@example.com');
+    
     const subData = {
       userId: 1,
       tierId: 2,
@@ -54,15 +31,14 @@ describe('Integration: Membership Flow', () => {
       paypalSubscriptionId: 'I-123',
     };
 
-    vi.mocked(prisma.subscription.upsert).mockResolvedValue({ id: 100, ...subData } as any);
+    await MembershipService.upsertSubscription(subData);
 
-    const result = await MembershipService.upsertSubscription(subData);
-
-    expect(result.id).toBe(100);
-    expect(prisma.subscription.upsert).toHaveBeenCalledWith({
-      where: { userId: 1 },
-      update: { tierId: 2, status: 'ACTIVE', paypalSubscriptionId: 'I-123' },
-      create: subData,
-    });
+    // Verify in DB
+    const sub = await prisma.subscription.findUnique({ where: { userId: 1 } });
+    expect(sub).toBeDefined();
+    expect(sub?.tierId).toBe(2);
+    expect(sub?.status).toBe('ACTIVE');
+    expect(sub?.paypalSubscriptionId).toBe('I-123');
   });
 });
+

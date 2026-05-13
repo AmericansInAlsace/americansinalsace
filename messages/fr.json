@@ -5,7 +5,31 @@
     "upcomingEvents": "Événements à Venir",
     "viewAllEvents": "Voir Tous les Événements",
     "noEvents": "Restez à l'écoute pour nos prochaines célébrations ! Les détails seront postés ici bientôt.",
-    "latestNews": "Dernières Nouvelles"
+    "latestNews": "Dernières Nouvelles",
+    "welcomeTitle": "Bienvenue sur notre nouvelle plateforme communautaire !",
+    "welcomeDescription": "Nous sommes ravis de lancer le nouveau site web Americans in Alsace. Cette plateforme servira de hub central pour nos événements, nos actualités et les connexions entre membres.",
+    "readMore": "En savoir plus",
+    "moreNews": "D'autres articles arrivent bientôt...",
+    "whyJoinTitle": "Pourquoi nous rejoindre ?",
+    "whyJoinPoint1": "Connectez-vous avec d'autres Nord-Américains en Alsace.",
+    "whyJoinPoint2": "Accédez à des événements et ressources exclusifs pour les membres.",
+    "whyJoinPoint3": "Soutenez la communauté expat locale.",
+    "joinToday": "Inscrivez-vous dès aujourd'hui",
+    "contactTitle": "Contactez-nous",
+    "contactDescription": "Vous avez des questions ou souhaitez vous impliquer ? Contactez-nous à {email}.",
+    "bugReportTitle": "Un problème technique ?",
+    "bugReportDescription": "Aidez-nous à faire fonctionner notre plateforme. Si vous remarquez un bug, signalez-le directement à notre équipe de développement.",
+    "reportIssue": "Signaler un problème",
+    "footerDescription": "Un pont entre l'Amérique du Nord et le Grand Est. Soutenir notre communauté depuis 2026.",
+    "quickLinks": "Liens Rapides",
+    "legalTitle": "Légal & Accessibilité",
+    "accessibilityStatement": "Déclaration d'Accessibilité",
+    "privacyPolicy": "Politique de Confidentialité",
+    "legalMentions": "Mentions Légales",
+    "allRightsReserved": "© {year} Americans in Alsace. Tous droits réservés.",
+    "accessibilityCompliance": "Accessibilité : Partiellement Conforme",
+    "verificationSuccess": "Votre email a été vérifié avec succès ! Vous pouvez maintenant vous connecter.",
+    "verificationError": "Échec de la vérification : {error}"
   },
   "Navbar": {
     "home": "Accueil",
@@ -14,7 +38,9 @@
     "profile": "Profil",
     "login": "Connexion",
     "register": "S'inscrire",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "backoffice": "Administration",
+    "backofficeDashboard": "Tableau de Bord"
   },
   "Auth": {
     "login": "Connexion",
@@ -25,5 +51,18 @@
     "resetPassword": "Réinitialiser le mot de passe",
     "alreadyHaveAccount": "Déjà un compte ? Connectez-vous",
     "dontHaveAccount": "Pas de compte ? Inscrivez-vous"
+  },
+  "Events": {
+    "title": "Événements Communautaires",
+    "description": "Rejoignez-nous pour des rencontres sociales, des visites culturelles et des célébrations annuelles.",
+    "noEvents": "Aucun événement prévu pour le moment.",
+    "checkBackSoon": "Revenez bientôt pour de nouvelles activités !"
+  },
+  "Sponsors": {
+    "title": "Nos Généreux <span>Sponsors</span>",
+    "description": "Nous sommes profondément reconnaissants du soutien de ces organisations. Leurs contributions nous aident à maintenir et à développer la communauté Americans in Alsace.",
+    "noSponsors": "Nous n'avons actuellement aucun sponsor actif. Soyez le premier à soutenir notre communauté !",
+    "visitWebsite": "Visiter le site web",
+    "sponsorBadge": "Sponsor {tier}"
   }
 }
