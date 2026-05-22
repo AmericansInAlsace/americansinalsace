@@ -3,6 +3,8 @@ import { SponsorshipService } from '@/services/SponsorshipService';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Public Sponsors Page.
  * Displays all active sponsors, ordered by their tier priority.
@@ -62,7 +64,7 @@ export default async function SponsorsPage() {
                           {sponsor.companyName}
                         </h3>
                         <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700">
-                          {t('sponsorBadge', { tier: sponsor.tierName })}
+                          {t('sponsorBadge', { tier: sponsor.tierName || '' })}
                         </span>
                       </div>
                     </div>

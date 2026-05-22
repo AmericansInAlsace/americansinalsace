@@ -9,7 +9,7 @@ import pg from 'pg';
  */
 const globalForPrisma = global as unknown as { [key: string]: any };
 
-const connectionString = process.env.DATABASE_URL || '';
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/app_db';
 
 const pool = new pg.Pool({ connectionString });
 const adapter = new PrismaPg(pool);

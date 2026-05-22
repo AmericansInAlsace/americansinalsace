@@ -9,6 +9,8 @@ import TransactionTable from '@/components/ui/TransactionTable';
 import FinancialActions from './FinancialActions';
 import { formatCurrency } from '@/lib/formatters';
 
+export const dynamic = 'force-dynamic';
+
 // Placeholder for KPI card component
 interface KpiCardProps {
   title: string;

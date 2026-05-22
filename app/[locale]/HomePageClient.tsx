@@ -33,8 +33,8 @@ function VerificationContent() {
   if (!verified && !error) return null;
 
   return (
-    <div className={`py-3 px-4 text-center text-sm font-medium ${verified ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`} role="alert">
-      {verified ? t('verificationSuccess') : t('verificationError', { error })}
+    <div className={`py-3 px-4 text-center text-sm font-medium ${verified === 'true'? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`} role="alert">
+      {verified === 'true' ? t('verificationSuccess') : t('verificationError', { error: error || 'Unknown error' })}
     </div>
   );
 }

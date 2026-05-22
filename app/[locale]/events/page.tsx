@@ -2,6 +2,8 @@ import { prisma } from '@/lib/db';
 import { EventCard } from '@/components/ui/EventCard';
 import { getTranslations } from 'next-intl/server';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Public Events Listing Page.
  */
