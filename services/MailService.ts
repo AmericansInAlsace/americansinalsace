@@ -10,12 +10,12 @@ export class MailService {
   private static transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'localhost',
     port: Number(process.env.SMTP_PORT) || 1025,
-    secure: process.env.SMTP_SECURE === 'true',
+    secure: process.env.SMTP_PORT === '465',
     auth: process.env.SMTP_USER ? {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     } : undefined,
-    ignoreTLS: process.env.SMTP_SECURE !== 'true',
+    ignoreTLS: false,
   });
 
   /**
