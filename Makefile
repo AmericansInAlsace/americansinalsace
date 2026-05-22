@@ -155,6 +155,7 @@ seed-dev:
 
 build-staging:
 	@echo "--- Building Next.js (Optimized for Pi 3B) ---"
+	NODE_OPTIONS="--max-old-space-size=768" npm ci --legacy-peer-deps --no-audit --no-fund --foreground-scripts
 	/bin/bash -c "set -a; [ -f $(ENV_FILE) ] && source $(ENV_FILE); set +a && npm run build:staging"
 
 # --- Testing & Coverage Targets ---
