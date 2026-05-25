@@ -18,7 +18,7 @@ services:
     image: aia-staging:latest
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/app_db?schema=public
-    command: npx prisma migrate deploy
+    command: node node_modules/prisma/build/index.js migrate deploy
     depends_on:
       db:
         condition: service_healthy
